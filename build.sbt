@@ -7,8 +7,8 @@ lazy val rootName = "cory-learns-scala"
 
 lazy val akkaDependencies = Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
+  "org.scalatest" %% "scalatest" % "3.0.5" % Test
 )
 
 lazy val root = (project in file("."))
