@@ -3,22 +3,17 @@ package com.cory.core
 import akka.actor.{ Actor, ActorRef, Props }
 
 object Greeter {
-  def props(message: String, printerActor: ActorRef): Props = Props(new Greeter(message, printerActor))
+  def props(message: String, printer: ActorRef): Props = Props(new Greeter(message, printer))
 
-  final case class WhoToGreet(who: String)
-  case object Greet
+  final case class Greet(who: String)
 }
 
-class Greeter(message: String, printerActor: ActorRef) extends Actor {
+class Greeter(message: String, printer: ActorRef) extends Actor {
   import Greeter._
   import Printer.Greeting
 
-  var greeting = ""
-
   def receive = {
-    case WhoToGreet(who) =>
-      greeting = message + ", " + who
-    case Greet           =>
-      printerActor ! Greeting(greeting)
+    case Greet(who) =>
+      printer ! Greeting(s"$message, $who")
   }
 }
