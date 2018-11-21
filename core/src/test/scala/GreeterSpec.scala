@@ -19,15 +19,15 @@ class GreeterSpec(name: String) extends BaseSpec(name)
   }
 
   "A Greeter Actor" should {
-    "send a greeting message to the printer" in {
+    "send a greeting message to the greeting processor" in {
       val message = "hello"
-      val printer = TestProbe()
-      val helloGreeter = system.actorOf(Greeter.props(message, printer.ref))
+      val greetingProcessor = TestProbe()
+      val helloGreeter = system.actorOf(Greeter.props(message, greetingProcessor.ref))
 
       val person = "Akka"
       helloGreeter ! Greet(person)
 
-      printer.expectMsg(500 millis, Greeting(message + ", " + person))
+      greetingProcessor.expectMsg(500 millis, Greeting(message + ", " + person))
     }
   }
 }

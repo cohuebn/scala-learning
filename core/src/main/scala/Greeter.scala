@@ -8,12 +8,12 @@ object Greeter {
   final case class Greet(who: String)
 }
 
-class Greeter(message: String, printer: ActorRef) extends Actor {
+class Greeter(message: String, greetingProcessor: ActorRef) extends Actor {
   import Greeter._
   import Printer.Greeting
 
   def receive = {
     case Greet(who) =>
-      printer ! Greeting(s"$message, $who")
+      greetingProcessor ! Greeting(s"$message, $who")
   }
 }
