@@ -1,33 +1,32 @@
-import akka.testkit.TestProbe
-import com.cory.core.Greeter
+package com.cory.core.tests
+
+import akka.testkit.{ImplicitSender, TestProbe}
+import com.cory.core.{Greeter, Greeting}
 import com.cory.core.Greeter._
-import com.cory.core.Printer.Greeting
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class GreeterSpec(name: String) extends BaseSpec(name)
+class GreeterSpec() extends BaseSpec("GreeterSpec") with ImplicitSender
   with Matchers
   with WordSpecLike
   with BeforeAndAfterAll {
-
-  def this() = this("GreeterSpec")
 
   override def afterAll: Unit = {
     shutdown(system)
   }
 
   "A Greeter Actor" should {
-    "send a greeting message to the greeting processor" in {
-      val message = "hello"
-      val greetingProcessor = TestProbe()
-      val helloGreeter = system.actorOf(Greeter.props(message, greetingProcessor.ref))
+    "send a greeting message to the respondTo actor when given" in {
+      val message = "yo"
+      val respondTo = TestProbe()
+      val helloGreeter = system.actorOf(Greeter.props(message))
 
-      val person = "Akka"
-      helloGreeter ! Greet(person)
+      val person = "Marge"
+      helloGreeter ! Greet(person, respondTo.testActor)
 
-      greetingProcessor.expectMsg(500 millis, Greeting(message + ", " + person))
+      respondTo.expectMsg(500 millis, Greeting("yo, Marge"))
     }
   }
 }

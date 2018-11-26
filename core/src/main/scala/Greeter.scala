@@ -1,19 +1,18 @@
 package com.cory.core
 
-import akka.actor.{ Actor, ActorRef, Props }
+import akka.actor.{Actor, ActorRef, Props}
 
 object Greeter {
-  def props(message: String, printer: ActorRef): Props = Props(new Greeter(message, printer))
+  def props(message: String): Props = Props(new Greeter(message))
 
-  final case class Greet(who: String)
+  final case class Greet(who: String, respondTo: ActorRef)
 }
 
-class Greeter(message: String, greetingProcessor: ActorRef) extends Actor {
+class Greeter(message: String) extends Actor {
   import Greeter._
-  import Printer.Greeting
 
   def receive = {
-    case Greet(who) =>
-      greetingProcessor ! Greeting(s"$message, $who")
+    case Greet(who, respondTo) =>
+      respondTo ! Greeting(s"$message, $who")
   }
 }

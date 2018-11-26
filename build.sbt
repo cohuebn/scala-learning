@@ -27,14 +27,14 @@ lazy val core = project
   )
 
 lazy val console = project
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
   .settings(
     name := s"$rootName-console",
     libraryDependencies ++= akkaDependencies
   )
 
 lazy val web = project
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
   .settings(
     name := s"$rootName-web",
     libraryDependencies ++= akkaDependencies,

@@ -1,3 +1,5 @@
+package com.cory.core.tests
+
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
