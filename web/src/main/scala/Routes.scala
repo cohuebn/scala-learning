@@ -19,17 +19,18 @@ trait JsonSupport extends SprayJsonSupport {
 
 trait Routes extends JsonSupport with AskSupport {
   implicit val timeout: Timeout = 3.seconds
+  val dialects = List("basic", "cowboy", "butler")
   def routes(greetingTranslator: ActorRef): Route = pathPrefix("greetings") {
     path("random" / Remaining) {
       name => get {
-        val dialect = Random.shuffle(List("basic", "cowboy", "butler")).head
+        val dialect = Random.shuffle(dialects).head
         onSuccess(greetingTranslator ? GreetingRequest(dialect, name)) {
           case greeting: Greeting => complete(greeting)
         }
       }
     } ~
-    path("""\w+""".r / Remaining) {
-      (dialect, name) => get {
+    path(s"${dialects.mkString("|")}".r / Remaining) {
+      (dialect: String, name: String) => get {
         onSuccess(greetingTranslator ? GreetingRequest(dialect, name)) {
           case greeting: Greeting => complete(greeting)
         }
