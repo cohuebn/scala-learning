@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import com.cory.core.{Greeter, GreetingTranslator}
+import com.cory.web.Config.{apiPort, apiName}
 
 import scala.io.StdIn
 
@@ -23,10 +24,10 @@ object Server extends App with Routes {
   )
   val greetingTranslator = system.actorOf(GreetingTranslator.props(dialectMap))
 
-  val (url, port) = ("localhost", 1307)
+  val (url, port) = ("localhost", apiPort)
   val bindingFuture = Http().bindAndHandle(routes(greetingTranslator), url, port)
 
-  println(s"Running the server @ http://$url:$port/\nPress RETURN to stop...")
+  println(s"Running the $apiName server @ http://$url:$port/\nPress RETURN to stop...")
   StdIn.readLine()
   bindingFuture
     .flatMap(_.unbind())
