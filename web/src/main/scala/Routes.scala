@@ -20,9 +20,7 @@ trait Routes extends JsonSupport with AskSupport {
 
   def routes(greetingTranslator: ActorRef): Route = pathPrefix("greetings") {
     def toGreetingResponse(greetingMagnet: GreetingRequestMagnet) = {
-      onSuccess(greetingTranslator ? greetingMagnet.apply) {
-        case greeting: Greeting => complete(greeting)
-      }
+      complete { (greetingTranslator ? greetingMagnet.apply).mapTo[Greeting] }
     }
 
     pathPrefix("dialects") {
