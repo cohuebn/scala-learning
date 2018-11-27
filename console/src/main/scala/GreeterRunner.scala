@@ -3,6 +3,7 @@ package com.cory.console
 import akka.actor.{ActorRef, ActorSystem}
 import com.cory.core.GreetingTranslator.GreetingRequest
 import com.cory.core.{Greeter, GreetingTranslator}
+import com.cory.core.Dialects.dialectMap
 
 import scala.concurrent.duration._
 
@@ -12,13 +13,8 @@ object GreeterRunner extends App {
   def createGreeter(message: String): ActorRef = {
     system.actorOf(Greeter.props(message), s"${message.replaceAll("\\s+", "")}Greeter")
   }
-
-  val dialectMap = Map(
-    "cowboy" -> createGreeter("Howdy"),
-    "basic" -> createGreeter("Hello"),
-    "butler" -> createGreeter("Good day")
-  )
-  val greetingTranslator = system.actorOf(GreetingTranslator.props(dialectMap))
+  def greeterMap = dialectMap map { case (dialect, greeting) => dialect -> createGreeter(greeting) }
+  val greetingTranslator = system.actorOf(GreetingTranslator.props(greeterMap))
 
   val greetingLogger = system.actorOf(GreetingLogger.props(greetingTranslator))
   val greetings = List(

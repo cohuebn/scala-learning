@@ -7,10 +7,8 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.AskSupport
 import akka.util.Timeout
 import com.cory.core.Greeting
-import com.cory.core.GreetingTranslator.GreetingRequest
 
 import scala.concurrent.duration._
-import scala.util.Random
 
 trait JsonSupport extends SprayJsonSupport {
   import spray.json.DefaultJsonProtocol._
@@ -19,21 +17,20 @@ trait JsonSupport extends SprayJsonSupport {
 
 trait Routes extends JsonSupport with AskSupport {
   implicit val timeout: Timeout = 3.seconds
-  val dialects = List("basic", "cowboy", "butler")
+
   def routes(greetingTranslator: ActorRef): Route = pathPrefix("greetings") {
-    path("random" / Remaining) {
-      name => get {
-        val dialect = Random.shuffle(dialects).head
-        onSuccess(greetingTranslator ? GreetingRequest(dialect, name)) {
-          case greeting: Greeting => complete(greeting)
-        }
+    def toGreetingResponse(greetingMagnet: GreetingRequestMagnet) = {
+      onSuccess(greetingTranslator ? greetingMagnet.apply) {
+        case greeting: Greeting => complete(greeting)
       }
-    } ~
-    path(s"${dialects.mkString("|")}".r / Remaining) {
-      (dialect: String, name: String) => get {
-        onSuccess(greetingTranslator ? GreetingRequest(dialect, name)) {
-          case greeting: Greeting => complete(greeting)
-        }
+    }
+
+    pathPrefix("dialects") {
+      path("random" / Segment) {
+        name => get(toGreetingResponse(name))
+      } ~
+      path(Segment / Segment).as(ValidatedGreetingRequest) {
+        validatedRequest => get(toGreetingResponse(validatedRequest))
       }
     }
   }
