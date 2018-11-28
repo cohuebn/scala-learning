@@ -1,4 +1,6 @@
-ThisBuild / version := "0.0.1-justbeginning"
+lazy val install = taskKey[Unit]("install")
+
+ThisBuild / version := "0.0.2"
 ThisBuild / scalaVersion := "2.12.6"
 
 lazy val akkaVersion = "2.5.18"
@@ -18,7 +20,13 @@ lazy val webDependencies = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(core, console)
+  .aggregate(system, core, console, web)
+
+lazy val system = project
+  .settings(
+    name := s"$rootName-system",
+    fullRunTask(install, Compile, "com.cory.system.Installer")
+  )
 
 lazy val core = project
   .settings(
