@@ -9,7 +9,7 @@ import com.cory.core.Dialects.dialectMap
 
 import scala.io.StdIn
 
-object Server extends App with Routes {
+object Server extends App {
   implicit val system = ActorSystem("GreeterWebApp")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
@@ -22,7 +22,8 @@ object Server extends App with Routes {
   val greetingTranslator = system.actorOf(GreetingTranslator.props(greeterMap))
 
   val (url, port) = ("localhost", apiPort)
-  val bindingFuture = Http().bindAndHandle(routes(greetingTranslator), url, port)
+  val greetingController = new GreetingController(greetingTranslator)
+  val bindingFuture = Http().bindAndHandle(greetingController.routes, url, port)
 
   println(s"Running the $apiName server @ http://$url:$port/\nPress RETURN to stop...")
   StdIn.readLine()
