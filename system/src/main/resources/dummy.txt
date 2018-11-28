@@ -1,1 +1,0 @@
-I am only here as a hacky-work-around to getting the path of the resource directory
