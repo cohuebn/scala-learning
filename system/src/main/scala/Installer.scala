@@ -9,7 +9,10 @@ import scala.language.postfixOps
 import scala.sys.process._
 
 object Installer extends App {
-  lazy val rootDirectory: File = File(getClass.getClassLoader.getResource("dummy.txt").toURI).parent
+  lazy val rootDirectory: File = File(getClass.getClassLoader.getResource("dummy.txt").toURI)
+    .parent
+    .parent
+    .parent
 
   def ensureDirectoryExists(path: String): Unit = {
     println(s"Ensuring $path exists")
@@ -26,7 +29,7 @@ object Installer extends App {
     }
   }
 
-  def intallKafka() = {
+  def intallKafka(): Unit = {
     val zipPath = s"${rootDirectory}/kafka.tgz"
 
     runWhenNotFound(zipPath) {
