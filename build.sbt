@@ -25,7 +25,8 @@ lazy val root = (project in file("."))
 lazy val system = project
   .settings(
     name := s"$rootName-system",
-    fullRunTask(install, Compile, "com.cory.system.Installer")
+    fullRunTask(install, Compile, "com.cory.system.Installer"),
+    libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.6.0"
   )
 
 lazy val core = project
