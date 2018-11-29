@@ -1,7 +1,9 @@
 lazy val install = taskKey[Unit]("install")
+lazy val sendKafkaData = taskKey[Unit]("sendKafkaData")
 
 ThisBuild / version := "0.0.2"
 ThisBuild / scalaVersion := "2.12.6"
+ThisBuild / resolvers += "Fabricator" at "http://dl.bintray.com/biercoff/Fabricator"
 
 lazy val akkaVersion = "2.5.18"
 
@@ -13,14 +15,14 @@ lazy val akkaDependencies = Seq(
   "org.scalatest" %% "scalatest" % "3.0.5" % Test
 )
 
-lazy val streamsDependencies = Seq(
+lazy val streamsDependencies = akkaDependencies ++ Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion
 )
 
-lazy val webDependencies = streamsDependencies ++
+lazy val kafkaDependencies = streamsDependencies ++
   Seq(
-    "com.typesafe.akka" %% "akka-http" % "10.1.5",
-    "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
+    "com.typesafe.akka" %% "akka-stream-kafka" % "0.21.1",
+    "ch.qos.logback" % "logback-classic" % "1.2.3"
   )
 
 lazy val root = (project in file("."))
@@ -37,7 +39,10 @@ lazy val system = project
   .settings(
     name := s"$rootName-system",
     fullRunTask(install, Compile, "com.cory.system.Installer"),
-    libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.6.0"
+    fullRunTask(sendKafkaData, Compile, "com.cory.system.SendKafkaData"),
+    libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.6.0",
+    libraryDependencies += "com.github.azakordonets" %% "fabricator" % "2.1.5",
+    libraryDependencies ++= kafkaDependencies
   )
 
 lazy val core = project
@@ -57,6 +62,9 @@ lazy val web = project
   .dependsOn(core % "compile->compile;test->test")
   .settings(
     name := s"$rootName-web",
-    libraryDependencies ++= akkaDependencies,
-    libraryDependencies ++= webDependencies
+    libraryDependencies ++= streamsDependencies,
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-http" % "10.1.5",
+      "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
+    )
   )
