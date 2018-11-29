@@ -1,11 +1,15 @@
 package com.cory.playground
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Sink
+
 object Playground extends App {
-  Tests.runTypeClassScenario
+  Tests.runStreamScenario
 }
 
 object Tests {
-  def runPolymorphismScenario(): Traversable[Unit] = {
+  def runPolymorphismScenario: Traversable[Unit] = {
     val baseClassInstances = List(new Subclass1, new Subclass2)
 
     BaseClassProcessor.mapAll(baseClassInstances) {
@@ -39,5 +43,16 @@ object Tests {
     }
 
     println(s"Added strings with improved adder: ${add(strings)}")
+  }
+
+  def runStreamScenario: Unit = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    implicit val system = ActorSystem("LearningToStream")
+    implicit val materializer: ActorMaterializer = ActorMaterializer()
+
+    val seqSink = Sink.seq[Int]
+    val result = Streams.addFive(Streams.range(10)).runWith(seqSink)
+    result.foreach(println(_))
+    system.terminate()
   }
 }

@@ -13,18 +13,24 @@ lazy val akkaDependencies = Seq(
   "org.scalatest" %% "scalatest" % "3.0.5" % Test
 )
 
-lazy val webDependencies = Seq(
-  "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http" % "10.1.5",
-  "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
+lazy val streamsDependencies = Seq(
+  "com.typesafe.akka" %% "akka-stream" % akkaVersion
 )
+
+lazy val webDependencies = streamsDependencies ++
+  Seq(
+    "com.typesafe.akka" %% "akka-http" % "10.1.5",
+    "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
+  )
 
 lazy val root = (project in file("."))
   .aggregate(system, core, console, web)
 
 lazy val playground = project
   .settings(
-    name := s"$rootName-playground"
+    name := s"$rootName-playground",
+    libraryDependencies ++= akkaDependencies,
+    libraryDependencies ++= streamsDependencies
   )
 
 lazy val system = project
