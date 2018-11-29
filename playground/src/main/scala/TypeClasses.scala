@@ -1,4 +1,4 @@
-package com.cory.system
+package com.cory.playground
 
 trait Addable[T] {
   def add(val1: T, val2: T): T

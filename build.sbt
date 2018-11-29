@@ -1,5 +1,4 @@
 lazy val install = taskKey[Unit]("install")
-lazy val playground = taskKey[Unit]("playground")
 
 ThisBuild / version := "0.0.2"
 ThisBuild / scalaVersion := "2.12.6"
@@ -23,11 +22,15 @@ lazy val webDependencies = Seq(
 lazy val root = (project in file("."))
   .aggregate(system, core, console, web)
 
+lazy val playground = project
+  .settings(
+    name := s"$rootName-playground"
+  )
+
 lazy val system = project
   .settings(
     name := s"$rootName-system",
     fullRunTask(install, Compile, "com.cory.system.Installer"),
-    fullRunTask(playground, Compile, "com.cory.system.Playground"),
     libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.6.0"
   )
 

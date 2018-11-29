@@ -1,4 +1,4 @@
-package com.cory.system
+package com.cory.playground
 
 abstract class BaseClass {
   val name: String
