@@ -4,10 +4,23 @@ import java.text.SimpleDateFormat
 import java.util.{Calendar, Date}
 
 object Playground extends App {
-  Tests.runStreamScenario
+  Tests.runImplicitConversionTest
 }
 
 object Tests {
+  def runImplicitConversionTest = {
+    import com.cory.playground.BooleanConverter.toBoolean
+
+    def iPrintBooleans(value: Boolean): Unit = {
+      println(s"I print booleans: $value")
+    }
+
+    iPrintBooleans("YeS")
+    iPrintBooleans("no")
+    if ("Yes")
+      println("Crazy conversion works!")
+  }
+
   def runPolymorphismScenario: Unit = {
     val baseClassInstances = List(new Subclass1("Woof"), new Subclass2)
 
@@ -55,7 +68,7 @@ object Tests {
     implicit val system = ActorSystem("LearningToStream")
     implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-    val actorSource = Source.actorRef[String](1000, OverflowStrategy.fail)
+    val actorSource = Source.actorRef[String](5, OverflowStrategy.fail)
     val seqSink = Sink.seq[String]
     val streamingSink = Sink.foreach[String](x => println(s"Streaming $x"))
     val (actor, allAtOnce) = actorSource.toMat(seqSink)(Keep.both).run()
