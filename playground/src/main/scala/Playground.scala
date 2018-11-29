@@ -1,11 +1,10 @@
 package com.cory.playground
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Sink
+import java.text.SimpleDateFormat
+import java.util.{Calendar, Date}
 
 object Playground extends App {
-  Tests.runPolymorphismScenario
+  Tests.runStreamScenario
 }
 
 object Tests {
@@ -46,12 +45,40 @@ object Tests {
 
   def runStreamScenario: Unit = {
     import scala.concurrent.ExecutionContext.Implicits.global
+    import scala.concurrent.duration._
+    import akka.actor.ActorSystem
+    import akka.actor.PoisonPill
+
+    import akka.stream.scaladsl.{Keep, Sink, Source}
+    import akka.stream.{ActorMaterializer, OverflowStrategy}
+
     implicit val system = ActorSystem("LearningToStream")
     implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-    val seqSink = Sink.seq[Int]
-    val result = Streams.addFive(Streams.range(10)).runWith(seqSink)
-    result.foreach(println(_))
-    system.terminate()
+    val actorSource = Source.actorRef[String](1000, OverflowStrategy.fail)
+    val seqSink = Sink.seq[String]
+    val streamingSink = Sink.foreach[String](x => println(s"Streaming $x"))
+    val (actor, allAtOnce) = actorSource.toMat(seqSink)(Keep.both).run()
+    val (actor2) = actorSource.toMat(streamingSink)(Keep.left).run()
+
+    system.scheduler.schedule(0 second, 1 second) {
+      val current = now
+      actor ! current
+      actor2 ! current
+    }
+    system.scheduler.scheduleOnce(10 seconds) {
+      actor ! PoisonPill
+      actor2 ! PoisonPill
+      system.terminate()
+    }
+
+    // Streaming vs. all-at-once
+    allAtOnce.foreach(x => println(s"Sequence: $x"))
+  }
+
+  def now: String = {
+    val date = new Date
+    val formatter = new SimpleDateFormat("hh:mm:ss")
+    formatter.format(date)
   }
 }
