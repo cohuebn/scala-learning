@@ -12,4 +12,8 @@ object Addable {
   implicit object StringAddable extends Addable[String] {
     override def add(val1: String, val2: String): String = { val1.concat(" ").concat(val2) }
   }
+
+  def add[T](values: Traversable[T])(implicit ev: Addable[T]): T = {
+    values.reduce(ev.add(_, _))
+  }
 }

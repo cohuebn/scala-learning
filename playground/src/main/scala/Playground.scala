@@ -5,27 +5,26 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 
 object Playground extends App {
-  Tests.runStreamScenario
+  Tests.runPolymorphismScenario
 }
 
 object Tests {
-  def runPolymorphismScenario: Traversable[Unit] = {
-    val baseClassInstances = List(new Subclass1, new Subclass2)
+  def runPolymorphismScenario: Unit = {
+    val baseClassInstances = List(new Subclass1("Woof"), new Subclass2)
 
-    BaseClassProcessor.mapAll(baseClassInstances) {
+    BaseClassProcessor.printAndMap(baseClassInstances) {
       baseClassInstance => baseClassInstance.printName()
     }
 
-    val barkerInstances = List(new Subclass1, new Subclass1)
-    BaseClassProcessor.mapAll(barkerInstances) {
-      barkerInstance => barkerInstance.iBark()
+    val barkerInstances = List(new Subclass1("Yip"), new Subclass1("Weoowww!"))
+    val barkSounds = BaseClassProcessor.printAndMap(barkerInstances) {
+      _.barkSound
     }
+    barkSounds.foreach(sound => println(s"A sound: $sound"))
   }
 
   def runTypeClassScenario: Unit = {
-    def add[T](vals: Traversable[T])(implicit ev: Addable[T]): T = {
-      vals.reduce(ev.add)
-    }
+    import com.cory.playground.Addable.add
 
     val ints = List(1, 2, 3)
     println(s"Added ints: ${add(ints)}")

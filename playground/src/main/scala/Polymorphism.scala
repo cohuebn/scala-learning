@@ -8,7 +8,7 @@ abstract class BaseClass {
   }
 }
 
-class Subclass1 extends BaseClass {
+class Subclass1(val barkSound: String) extends BaseClass {
   val name = "subclass1"
 
   def iBark(): Unit = { println("Bark!") }
@@ -21,7 +21,10 @@ class Subclass2 extends BaseClass {
 }
 
 object BaseClassProcessor {
-  def mapAll[T <: BaseClass, U](items: Traversable[T])(action: T => U) = {
-    items.map(action(_))
+  def printAndMap[T <: BaseClass, U](items: Traversable[T])(action: T => U) = {
+    items.map(item => {
+      println(s"Within map all: ${item.name}")
+      action(item)
+    })
   }
 }
