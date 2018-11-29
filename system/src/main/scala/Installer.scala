@@ -2,16 +2,20 @@ package com.cory.system
 
 import java.io.{File => JFile}
 import java.net.URL
+import java.nio.file.attribute.{PosixFilePermission, PosixFilePermissions}
 
-import better.files.File.LinkOptions
 import better.files._
 
 import scala.language.postfixOps
 import scala.sys.process._
 
 object Installer extends App {
-  lazy val runnerScript = File(getClass.getClassLoader.getResource("run.ps1").toURI)
-  lazy val rootDirectory: File = runnerScript.parent.parent.parent
+  lazy val powershellRunner = resourceAsFile("run.ps1")
+  lazy val rootDirectory: File = powershellRunner.parent.parent.parent
+
+  def resourceAsFile(resourceName: String): File = {
+    File(getClass.getClassLoader.getResource(resourceName).toURI)
+  }
 
   def ensureDirectoryExists(path: String): Unit = {
     println(s"Ensuring $path exists")
@@ -41,20 +45,43 @@ object Installer extends App {
       val outputDirectory = File(outputPath)
       outputDirectory.delete(true)
       println(s"Unzipping $zipPath to $outputPath")
-      s"tar -xvzf $zipPath --force-local"!;
+      s"tar -xvzf $zipPath"!;
       File("kafka_2.11-2.1.0").moveTo(outputDirectory)
     }
 
     println("Kafka installed")
   }
 
-  def moveRunnerToRoot(): Unit = {
-    println(s"Moving runner to $rootDirectory")
-    File(s"$rootDirectory/${runnerScript.name}").delete(true)
-    runnerScript.moveToDirectory(rootDirectory)
+  def grantFullPermission(file: File): Unit = {
+    val allPermissions = Seq(
+      PosixFilePermission.OWNER_EXECUTE,
+      PosixFilePermission.OWNER_READ,
+      PosixFilePermission.OTHERS_WRITE,
+      PosixFilePermission.GROUP_EXECUTE,
+      PosixFilePermission.GROUP_READ,
+      PosixFilePermission.GROUP_WRITE,
+      PosixFilePermission.OTHERS_EXECUTE,
+      PosixFilePermission.OTHERS_READ,
+      PosixFilePermission.OTHERS_WRITE
+    )
+
+    allPermissions.foreach(file.addPermission(_))
+  }
+
+  def moveRunnersToRoot(): Unit = {
+    val shellRunner = resourceAsFile("run.sh")
+    Seq(powershellRunner, shellRunner)
+      .filter(_.exists)
+      .foreach { file =>
+        println(s"Ensuring correct permissions on $file")
+        grantFullPermission(file)
+        println(s"Moving $file to $rootDirectory")
+        File(s"$rootDirectory/${file.name}").delete(true)
+        file.moveToDirectory(rootDirectory)
+      }
   }
 
   ensureDirectoryExists(rootDirectory.pathAsString)
   installKafka
-  moveRunnerToRoot
+  moveRunnersToRoot
 }
