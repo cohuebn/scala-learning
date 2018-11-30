@@ -17,13 +17,14 @@ import scala.util.{Failure, Success}
 object SendKafkaData extends App {
   implicit val system: ActorSystem = ActorSystem("KafkaProducer")
   implicit val materializer: Materializer = ActorMaterializer()
+  lazy val contactGenerator = Contact()
 
   val producerSettings = ProducerSettings(system, new StringSerializer, new StringSerializer)
     .withBootstrapServers(Config.kafkaBootstrapServer)
 
   val done: Future[Done] = Source(1 to 10)
     .throttle(1, 2 seconds)
-    .map(_ => new ProducerRecord[String, String](Config.greetingTopic, s"${Contact().fullName(true, false)}"))
+    .map(_ => new ProducerRecord[String, String](Config.greetingTopic, s"${contactGenerator.fullName(true, false)}"))
     .log("Random greeting", x => x.value)
     .runWith(Producer.plainSink(producerSettings))
 
