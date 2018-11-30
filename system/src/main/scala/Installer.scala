@@ -2,9 +2,10 @@ package com.cory.system
 
 import java.io.{File => JFile}
 import java.net.URL
-import java.nio.file.attribute.{PosixFilePermission, PosixFilePermissions}
+import java.nio.file.attribute.PosixFilePermission
 
 import better.files._
+import org.apache.commons.lang3.SystemUtils
 
 import scala.language.postfixOps
 import scala.sys.process._
@@ -45,7 +46,9 @@ object Installer extends App {
       val outputDirectory = File(outputPath)
       outputDirectory.delete(true)
       println(s"Unzipping $zipPath to $outputPath")
-      s"tar -xvzf $zipPath"!;
+      val tarCommand = s"tar -xvzf $zipPath"
+      val osSpecificTarCommand = if (SystemUtils.IS_OS_WINDOWS) s"$tarCommand --force-local" else tarCommand
+      osSpecificTarCommand!;
       File("kafka_2.11-2.1.0").moveTo(outputDirectory)
     }
 
@@ -68,20 +71,24 @@ object Installer extends App {
     allPermissions.foreach(file.addPermission(_))
   }
 
-  def moveRunnersToRoot(): Unit = {
+  def moveShellRunnerToRoot() = {
     val shellRunner = resourceAsFile("run.sh")
-    Seq(powershellRunner, shellRunner)
-      .filter(_.exists)
-      .foreach { file =>
-        println(s"Ensuring correct permissions on $file")
-        grantFullPermission(file)
-        println(s"Moving $file to $rootDirectory")
-        File(s"$rootDirectory/${file.name}").delete(true)
-        file.moveToDirectory(rootDirectory)
-      }
+    println(s"Ensuring correct permissions on $shellRunner")
+    grantFullPermission(shellRunner)
+    moveToRoot(shellRunner)
+    None
+  }
+
+  def moveToRoot(file: File) = {
+    println(s"Moving $file to $rootDirectory")
+    val destination = File(s"$rootDirectory/${file.name}")
+    if (destination.exists) destination.delete()
+
+    file.moveToDirectory(rootDirectory)
+    None
   }
 
   ensureDirectoryExists(rootDirectory.pathAsString)
-  installKafka
-  moveRunnersToRoot
+  installKafka()
+  if (SystemUtils.IS_OS_WINDOWS) moveToRoot(powershellRunner) else moveShellRunnerToRoot()
 }

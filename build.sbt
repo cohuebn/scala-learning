@@ -42,6 +42,7 @@ lazy val system = project
     fullRunTask(sendKafkaData, Compile, "com.cory.system.SendKafkaData"),
     libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.6.0",
     libraryDependencies += "com.github.azakordonets" %% "fabricator" % "2.1.5",
+    libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.8.1",
     libraryDependencies ++= kafkaDependencies
   )
 
