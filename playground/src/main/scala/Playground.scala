@@ -62,6 +62,10 @@ object Tests {
     import com.cory.playground.Variance.{ProperConfirmation, Rsvps, Rsvp}
 
     val properConfirmations = new Rsvps(new ProperConfirmation(true), new ProperConfirmation(false))
+    // Still 'proper' type
+    properConfirmations.forall(_.isProper)
+
+    // No longer 'proper' type
     val confirmations: Rsvps[Rsvp] = properConfirmations
     println(s"Rowdy party? ${confirmations.rowdyParty}")
     val lateConfirmations = new Rsvps(new LazyConfirmation("yes"), new LazyConfirmation("YES"))

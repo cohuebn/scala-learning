@@ -7,16 +7,19 @@ object Variance {
 
   class ProperConfirmation(yesOrNo: Boolean) extends Rsvp {
     override val answer: Boolean = yesOrNo
+    val isProper: Boolean = true
   }
 
   class LazyConfirmation(yesOrNo: String) extends Rsvp {
     override val answer: Boolean = yesOrNo.equalsIgnoreCase("yes")
   }
 
-  class Rsvps[+T <: Rsvp](val rsvps: T*) {
+  class Rsvps[+T <: Rsvp](val rsvps: T*) extends Traversable[T] {
     def rowdyParty: Boolean = {
       rsvps.count(_.answer) > 2
     }
+
+    override def foreach[U](f: T => U): Unit = rsvps.foreach(f)
   }
 
   object Rsvps {
