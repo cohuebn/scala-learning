@@ -11,7 +11,8 @@ object Variance {
   }
 
   class LazyConfirmation(yesOrNo: String) extends Rsvp {
-    override val answer: Boolean = yesOrNo.equalsIgnoreCase("yes")
+    import com.cory.playground.BooleanConverter.toBoolean
+    override val answer: Boolean = "yes"
   }
 
   class Rsvps[+T <: Rsvp](val rsvps: T*) extends Traversable[T] {

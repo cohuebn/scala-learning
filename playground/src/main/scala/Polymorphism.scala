@@ -11,13 +11,13 @@ abstract class BaseClass {
 class Subclass1(val barkSound: String) extends BaseClass {
   val name = "subclass1"
 
-  def iBark(): Unit = { println("Bark!") }
+  def iBark(): Unit = println("Bark!")
 }
 
 class Subclass2 extends BaseClass {
   val name = "subclass2"
 
-  def iMoo(): Unit = { println("Moo") }
+  def iMoo(): Unit = println("Moo")
 }
 
 object BaseClassProcessor {
