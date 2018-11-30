@@ -36,6 +36,7 @@ lazy val playground = project
   )
 
 lazy val system = project
+  .dependsOn(core)
   .settings(
     name := s"$rootName-system",
     fullRunTask(install, Compile, "com.cory.system.Installer"),

@@ -1,9 +1,8 @@
 package com.cory.web
 
-import com.typesafe.config.ConfigFactory
+import com.cory.core.{Config => CoreConfig}
 
-object Config {
-  lazy val config = ConfigFactory.parseResources("defaults.conf").resolve()
+object Config extends CoreConfig {
   lazy val apiName = config.getString("conf.apiName")
   lazy val apiPort = config.getInt("conf.apiPort")
 }

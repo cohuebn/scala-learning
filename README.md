@@ -43,4 +43,5 @@ Once Kafka is running you can send random strings to the test topic using:
 
 ### Shell commands (assumes default ports):
 * List all topics - ```system/target/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --list```
-* Read all messages to a topic - ```system/target/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning```
+* Create a topic - ```system/target/kafka/bin/kafka-topics.sh -zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic greetings```
+* Read all messages to a topic - ```system/target/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic greetings --from-beginning```
