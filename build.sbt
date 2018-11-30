@@ -6,6 +6,7 @@ ThisBuild / scalaVersion := "2.12.6"
 ThisBuild / resolvers += "Fabricator" at "http://dl.bintray.com/biercoff/Fabricator"
 
 lazy val akkaVersion = "2.5.18"
+lazy val circeVersion = "0.10.1"
 
 lazy val rootName = "cory-learns-scala"
 
@@ -64,9 +65,13 @@ lazy val web = project
   .dependsOn(core % "compile->compile;test->test")
   .settings(
     name := s"$rootName-web",
-    libraryDependencies ++= streamsDependencies,
+    libraryDependencies ++= kafkaDependencies,
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-http" % "10.1.5",
-      "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
+      "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5",
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-jawn" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "de.heikoseeberger" %% "akka-http-circe" % "1.22.0"
     )
   )

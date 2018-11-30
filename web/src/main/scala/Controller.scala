@@ -6,8 +6,8 @@ import akka.util.Timeout
 
 import scala.concurrent.duration._
 
-abstract class Controller extends JsonSupport with AskSupport {
-  implicit val timeout: Timeout = 3.seconds
+abstract class Controller extends AskSupport {
+  implicit val timeout: Timeout = 20 seconds
 
   val routes: Route
 }

@@ -23,7 +23,7 @@ object SendKafkaData extends App {
     .withBootstrapServers(Config.kafkaBootstrapServer)
 
   val done: Future[Done] = Source(1 to 10)
-    .throttle(1, 2 seconds)
+    .throttle(1, 300 milliseconds)
     .map(_ => new ProducerRecord[String, String](Config.greetingTopic, s"${contactGenerator.fullName(true, false)}"))
     .log("Random greeting", x => x.value)
     .runWith(Producer.plainSink(producerSettings))
