@@ -1,14 +1,16 @@
 package com.cory.playground
 
 import java.text.SimpleDateFormat
-import java.util.{Calendar, Date}
+import java.util.Date
+
+import com.cory.playground.Variance.LazyConfirmation
 
 object Playground extends App {
-  Tests.runImplicitConversionTest
+  Tests.runVarianceScenario
 }
 
 object Tests {
-  def runImplicitConversionTest = {
+  def runImplicitConversionScenario = {
     import com.cory.playground.BooleanConverter.toBoolean
 
     def iPrintBooleans(value: Boolean): Unit = {
@@ -56,14 +58,24 @@ object Tests {
     println(s"Added strings with improved adder: ${add(strings)}")
   }
 
-  def runStreamScenario: Unit = {
-    import scala.concurrent.ExecutionContext.Implicits.global
-    import scala.concurrent.duration._
-    import akka.actor.ActorSystem
-    import akka.actor.PoisonPill
+  def runVarianceScenario: Unit = {
+    import com.cory.playground.Variance.{ProperConfirmation, Rsvps, Rsvp}
 
+    val properConfirmations = new Rsvps(new ProperConfirmation(true), new ProperConfirmation(false))
+    val confirmations: Rsvps[Rsvp] = properConfirmations
+    println(s"Rowdy party? ${confirmations.rowdyParty}")
+    val lateConfirmations = new Rsvps(new LazyConfirmation("yes"), new LazyConfirmation("YES"))
+    val updatedConfirmations = Rsvps.combine(confirmations, lateConfirmations)
+    println(s"Rowdy party now? ${updatedConfirmations.rowdyParty}")
+  }
+
+  def runStreamScenario: Unit = {
+    import akka.actor.{ActorSystem, PoisonPill}
     import akka.stream.scaladsl.{Keep, Sink, Source}
     import akka.stream.{ActorMaterializer, OverflowStrategy}
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+    import scala.concurrent.duration._
 
     implicit val system = ActorSystem("LearningToStream")
     implicit val materializer: ActorMaterializer = ActorMaterializer()
