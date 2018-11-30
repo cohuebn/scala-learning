@@ -6,7 +6,7 @@ import java.util.Date
 import com.cory.playground.Variance.LazyConfirmation
 
 object Playground extends App {
-  Tests.runVarianceScenario
+  Tests.runStreamScenario
 }
 
 object Tests {
@@ -59,7 +59,7 @@ object Tests {
   }
 
   def runVarianceScenario: Unit = {
-    import com.cory.playground.Variance.{ProperConfirmation, Rsvps, Rsvp}
+    import com.cory.playground.Variance.{ProperConfirmation, Rsvp, Rsvps}
 
     val properConfirmations = new Rsvps(new ProperConfirmation(true), new ProperConfirmation(false))
     // Still 'proper' type
@@ -83,21 +83,18 @@ object Tests {
 
     implicit val system = ActorSystem("LearningToStream")
     implicit val materializer: ActorMaterializer = ActorMaterializer()
-
-    val actorSource = Source.actorRef[String](5, OverflowStrategy.fail)
+    val (actor, actorSource) = Source.actorRef[String](256, OverflowStrategy.fail).preMaterialize()
     val seqSink = Sink.seq[String]
+    val allAtOnce = actorSource.toMat(seqSink)(Keep.right).run()
     val streamingSink = Sink.foreach[String](x => println(s"Streaming $x"))
-    val (actor, allAtOnce) = actorSource.toMat(seqSink)(Keep.both).run()
-    val (actor2) = actorSource.toMat(streamingSink)(Keep.left).run()
+    actorSource.toMat(streamingSink)(Keep.none).run()
 
     system.scheduler.schedule(0 second, 1 second) {
       val current = now
       actor ! current
-      actor2 ! current
     }
     system.scheduler.scheduleOnce(10 seconds) {
       actor ! PoisonPill
-      actor2 ! PoisonPill
       system.terminate()
     }
 
