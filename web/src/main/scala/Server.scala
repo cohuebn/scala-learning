@@ -7,6 +7,7 @@ import akka.stream.ActorMaterializer
 import com.cory.core.Dialects.dialectMap
 import com.cory.core.{Greeter, GreetingTranslator}
 import com.cory.web.Config.{apiName, apiPort}
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 
 import scala.io.StdIn
@@ -21,6 +22,9 @@ object Server extends App {
   }
   val consumerSettings = ConsumerSettings(system, new StringDeserializer, new StringDeserializer)
     .withBootstrapServers(Config.kafkaBootstrapServer)
+    .withGroupId("greeting-group")
+    .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+
   val greeterMap = dialectMap map { case (dialect, greeting) => dialect -> createGreeter(greeting) }
   val greetingTranslator = system.actorOf(GreetingTranslator.props(greeterMap))
   val greetingConsumer = system.actorOf(GreetingTopicConsumer.props(consumerSettings))

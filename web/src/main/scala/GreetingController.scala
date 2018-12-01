@@ -27,7 +27,7 @@ class GreetingController(greetingTranslator: ActorRef, greetingTopicConsumer: Ac
     path("new") {
       post {
         complete {
-          (greetingTopicConsumer ? GreetingTopicConsumerNewRequest).mapTo[String]
+          (greetingTopicConsumer ? GreetingTopicConsumerNewRequest).mapTo[Greeting]
         }
       }
     }

@@ -1,24 +1,25 @@
 package com.cory.web
 
 import akka.actor.{Actor, ActorLogging, Props}
-import akka.kafka.{ConsumerSettings, Subscriptions}
 import akka.kafka.scaladsl.Consumer
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.kafka.{ConsumerSettings, Subscriptions}
+import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
+import com.cory.core.Greeting
 import com.cory.web.GreetingTopicConsumer.GreetingTopicConsumerNewRequest
 
 import scala.concurrent.ExecutionContextExecutor
-import scala.util.{Failure, Success}
 import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 object GreetingTopicConsumer {
-  def props(consumerSettings: ConsumerSettings[String, String]): Props = Props(new GreetingTopicConsumer(consumerSettings))
+  def props(consumerSettings: ConsumerSettings[String, String])(implicit materializer: Materializer): Props =
+    Props(new GreetingTopicConsumer(consumerSettings)(materializer))
   object GreetingTopicConsumerNewRequest
 
 }
 
-class GreetingTopicConsumer(consumerSettings: ConsumerSettings[String, String]) extends Actor with ActorLogging {
-  implicit val materializer: Materializer = ActorMaterializer()
+class GreetingTopicConsumer(consumerSettings: ConsumerSettings[String, String])(implicit materializer: Materializer) extends Actor with ActorLogging {
   implicit val ec: ExecutionContextExecutor = context.dispatcher
   override def receive: Receive = {
     case GreetingTopicConsumerNewRequest => {
@@ -26,11 +27,16 @@ class GreetingTopicConsumer(consumerSettings: ConsumerSettings[String, String]) 
         .takeWithin(5 seconds)
         .runWith(Sink.foreach(x => log.warning(x.value())))
 
-      done onComplete {
+      val senderRef = sender()
+      done.onComplete {
         case Success(_) => {
-          sender() ! "I'm done"
+          log.warning("I'm successfully done")
+          senderRef ! Greeting("Successfully done")
         }
-        case Failure(_) => sender() ! "I'm done"
+        case Failure(_) => {
+          log.warning("I'm failfully done")
+          senderRef ! Greeting("Failed")
+        }
       }
     }
   }
