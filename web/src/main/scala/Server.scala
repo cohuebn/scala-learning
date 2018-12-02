@@ -10,7 +10,8 @@ import com.cory.web.Config.{apiName, apiPort}
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 
-import scala.io.StdIn
+import scala.concurrent.duration.Duration
+import scala.concurrent.Await
 
 object Server extends App {
   implicit val system = ActorSystem("GreeterWebApp")
@@ -33,9 +34,6 @@ object Server extends App {
   val greetingController = new GreetingController(greetingTranslator, greetingConsumer)
   val bindingFuture = Http().bindAndHandle(greetingController.routes, url, port)
 
-  println(s"Running the $apiName server @ http://$url:$port/\nPress RETURN to stop...")
-  StdIn.readLine()
-  bindingFuture
-    .flatMap(_.unbind())
-    .onComplete(_ => system.terminate())
+  println(s"Running the $apiName server @ http://$url:$port/\nPress ctrl+c to stop...")
+  Await.result(system.whenTerminated, Duration.Inf)
 }
