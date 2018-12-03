@@ -1,13 +1,13 @@
 package com.cory.web
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.kafka.scaladsl.Consumer
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import com.cory.core.Greeting
 import com.cory.core.GreetingTranslator.GreetingRequest
-import com.cory.web.GreetingTopicConsumer.GreetingTopicConsumerNewRequest
+import com.cory.web.GreetingTopicConsumer.LatestGreetingsRequest
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 import scala.concurrent.duration._
@@ -17,30 +17,35 @@ object GreetingTopicConsumer {
             greetingTranslator: ActorRef)
            (implicit materializer: Materializer): Props =
     Props(new GreetingTopicConsumer(consumer, greetingTranslator)(materializer))
-  object GreetingTopicConsumerNewRequest
+
+  final case class LatestGreetingsRequest(count: Int)
 }
 
 class GreetingTopicConsumer(consumer: Source[ConsumerRecord[String, String], Consumer.Control],
                             greetingTranslator: ActorRef)
-                           (implicit materializer: Materializer) extends Actor {
+                           (implicit materializer: Materializer) extends Actor
+  with ActorLogging {
   implicit val timeout: Timeout = 1 second
-  private val batchSize = 10
 
   private var greetings = List[Greeting]()
-  private var originalSender: Option[ActorRef] = None
+  private var takeSize: Option[Int] = None
+  private var replyTo: Option[ActorRef] = None
 
   override def receive: Receive = {
-    case GreetingTopicConsumerNewRequest => {
-      originalSender = Option(sender())
-      consumer
-        .take(batchSize)
-        .takeWithin(5 seconds)
-        .map(consumerRecord => GreetingRequest("basic", consumerRecord.value(), Option(context.self)))
-        .runWith(Sink.foreach(greetingRequest => greetingTranslator ! greetingRequest))
+    case request: LatestGreetingsRequest => {
+      replyTo = Option(sender())
+      val latestEmissions = consumer
+        .takeWithin(2 seconds)
+        .runWith(Sink.takeLast(request.count))
+
+      Source.fromFuture(latestEmissions).runWith(Sink.foreach(consumerRecords => {
+        takeSize = Option(consumerRecords.length)
+        consumerRecords.map(consumerRecord => GreetingRequest("basic", consumerRecord.value(), Option(context.self)))
+          .foreach(greetingRequest => greetingTranslator ! greetingRequest)
+      }))
     }
     case greeting: Greeting =>
       greetings = greetings :+ greeting
-      if (greetings.length == batchSize)
-        originalSender.foreach(x => x ! greetings)
+      takeSize.filter(x => x == greetings.length).foreach(_ => replyTo.get ! greetings)
   }
 }
