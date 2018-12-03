@@ -1,10 +1,10 @@
-package com.cory.core.tests
+package com.cory.core.test
 
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import akka.testkit.{ImplicitSender, TestProbe}
 import com.cory.core.Greeter.Greet
 import com.cory.core.GreetingTranslator
 import com.cory.core.GreetingTranslator.GreetingRequest
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 class GreetingTranslatorSpec() extends BaseSpec("GreeterTranslatorSpec")
   with ImplicitSender

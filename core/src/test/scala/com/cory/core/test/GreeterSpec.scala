@@ -1,8 +1,8 @@
-package com.cory.core.tests
+package com.cory.core.test
 
 import akka.testkit.{ImplicitSender, TestProbe}
-import com.cory.core.{Greeter, Greeting}
 import com.cory.core.Greeter._
+import com.cory.core.{Greeter, Greeting}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._

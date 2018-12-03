@@ -1,4 +1,4 @@
-package com.cory.core.tests
+package com.cory.core.test
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit

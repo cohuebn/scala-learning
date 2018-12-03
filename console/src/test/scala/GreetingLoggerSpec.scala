@@ -2,8 +2,8 @@ import akka.testkit.{EventFilter, TestProbe}
 import com.cory.console.GreetingLogger
 import com.cory.core.Greeting
 import com.cory.core.GreetingTranslator.GreetingRequest
+import com.cory.core.test.BaseSpec
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import com.cory.core.tests.BaseSpec
 
 class GreetingLoggerSpec extends BaseSpec("GreetingLoggerSpec")
   with Matchers
