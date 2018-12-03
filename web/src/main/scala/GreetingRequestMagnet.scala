@@ -1,5 +1,6 @@
 package com.cory.web
 
+import akka.actor.ActorRef
 import com.cory.core.GreetingTranslator.GreetingRequest
 import com.cory.core.Dialects.dialects
 
@@ -18,6 +19,6 @@ object GreetingRequestMagnet {
   }
 
   implicit def fromValidatedRequest(validatedRequest: ValidatedGreetingRequest): GreetingRequestMagnet = {
-    () => GreetingRequest.tupled(ValidatedGreetingRequest.unapply(validatedRequest).get)
+    () => GreetingRequest(validatedRequest.dialect, validatedRequest.name)
   }
 }

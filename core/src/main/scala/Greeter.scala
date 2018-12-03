@@ -12,7 +12,6 @@ class Greeter(message: String) extends Actor {
   import Greeter._
 
   def receive = {
-    case Greet(who, respondTo) =>
-      respondTo ! Greeting(s"$message, $who")
+    case Greet(who, respondTo) => respondTo ! Greeting(s"$message, $who")
   }
 }

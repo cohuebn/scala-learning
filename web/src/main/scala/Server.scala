@@ -2,16 +2,16 @@ package com.cory.web
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.Http
-import akka.kafka.ConsumerSettings
+import akka.kafka.scaladsl.Consumer
+import akka.kafka.{ConsumerSettings, Subscriptions}
 import akka.stream.ActorMaterializer
-import com.cory.core.Dialects.dialectMap
-import com.cory.core.{Greeter, GreetingTranslator}
+import com.cory.core.Greeter
 import com.cory.web.Config.{apiName, apiPort}
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 
-import scala.concurrent.duration.Duration
 import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 object Server extends App {
   implicit val system = ActorSystem("GreeterWebApp")
@@ -25,15 +25,17 @@ object Server extends App {
     .withBootstrapServers(Config.kafkaBootstrapServer)
     .withGroupId("greeting-group")
     .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-
-  val greeterMap = dialectMap map { case (dialect, greeting) => dialect -> createGreeter(greeting) }
-  val greetingTranslator = system.actorOf(GreetingTranslator.props(greeterMap))
-  val greetingConsumer = system.actorOf(GreetingTopicConsumer.props(consumerSettings))
+  val consumer = Consumer.plainSource(consumerSettings, Subscriptions.topics(Config.greetingTopic))
 
   val (url, port) = ("localhost", apiPort)
-  val greetingController = new GreetingController(greetingTranslator, greetingConsumer)
+  val greetingController = new GreetingController(consumer)
   val bindingFuture = Http().bindAndHandle(greetingController.routes, url, port)
 
   println(s"Running the $apiName server @ http://$url:$port/\nPress ctrl+c to stop...")
+
   Await.result(system.whenTerminated, Duration.Inf)
+  sys.addShutdownHook {
+    println("Shutting down system")
+    system.terminate()
+  }
 }

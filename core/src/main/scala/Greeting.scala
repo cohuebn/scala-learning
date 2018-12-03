@@ -1,3 +1,3 @@
 package com.cory.core
 
-final case class Greeting(name: String)
+final case class Greeting(greeting: String)
