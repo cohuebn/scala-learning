@@ -51,7 +51,7 @@ lazy val system = project
 lazy val core = project
   .settings(
     name := s"$rootName-core",
-    libraryDependencies ++= akkaDependencies
+    libraryDependencies ++= kafkaDependencies
   )
 
 lazy val console = project

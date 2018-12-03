@@ -5,8 +5,8 @@ import akka.http.scaladsl.server.Route
 import akka.kafka.scaladsl.Consumer
 import akka.stream.scaladsl.Source
 import com.cory.core.Dialects.dialectMap
-import com.cory.core.{Greeting, GreetingTranslator}
-import com.cory.web.GreetingTopicConsumer.LatestGreetingsRequest
+import com.cory.core.GreetingTopicConsumer.LatestGreetingsRequest
+import com.cory.core.{Greeting, GreetingTopicConsumer, GreetingTranslator}
 import com.cory.web.Server.createGreeter
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._

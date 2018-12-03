@@ -1,13 +1,12 @@
-package com.cory.web
+package com.cory.core
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.kafka.scaladsl.Consumer
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
-import com.cory.core.Greeting
+import com.cory.core.GreetingTopicConsumer.LatestGreetingsRequest
 import com.cory.core.GreetingTranslator.GreetingRequest
-import com.cory.web.GreetingTopicConsumer.LatestGreetingsRequest
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 import scala.concurrent.duration._
