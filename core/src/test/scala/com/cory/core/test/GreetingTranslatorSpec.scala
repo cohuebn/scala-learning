@@ -6,16 +6,7 @@ import com.cory.core.GreetingTranslator
 import com.cory.core.GreetingTranslator.GreetingRequest
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
-class GreetingTranslatorSpec() extends BaseSpec("GreeterTranslatorSpec")
-  with ImplicitSender
-  with Matchers
-  with WordSpecLike
-  with BeforeAndAfterAll {
-
-  override def afterAll: Unit = {
-    shutdown(system)
-  }
-
+class GreetingTranslatorSpec() extends BaseSpec[GreeterSpec] {
   "A GreeterTranslator actor" should {
     val (greeter1, greeter2) = (TestProbe(), TestProbe())
     val testCases = Map(

@@ -51,7 +51,9 @@ lazy val system = project
 lazy val core = project
   .settings(
     name := s"$rootName-core",
-    libraryDependencies ++= kafkaDependencies
+    libraryDependencies ++= kafkaDependencies,
+    libraryDependencies += "com.github.azakordonets" %% "fabricator" % "2.1.5" % Test,
+    libraryDependencies += "net.manub" %% "scalatest-embedded-kafka" % "2.0.0" % Test
   )
 
 lazy val console = project

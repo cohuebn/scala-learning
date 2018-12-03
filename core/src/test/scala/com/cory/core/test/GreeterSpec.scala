@@ -8,15 +8,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class GreeterSpec() extends BaseSpec("GreeterSpec") with ImplicitSender
-  with Matchers
-  with WordSpecLike
-  with BeforeAndAfterAll {
-
-  override def afterAll: Unit = {
-    shutdown(system)
-  }
-
+class GreeterSpec() extends BaseSpec[GreeterSpec] {
   "A Greeter Actor" should {
     "send a greeting message to the respondTo actor when given" in {
       val message = "yo"
