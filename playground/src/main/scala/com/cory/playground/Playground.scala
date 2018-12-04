@@ -43,7 +43,7 @@ object Tests {
     val ints = List(1, 2, 3)
     println(s"Added ints: ${add(ints)}")
 
-    import com.cory.playground.forImports.ForImports.ImprovedIntAdder
+    import ForImports.ImprovedIntAdder
     println(s"Added ints with improved adder: ${add(ints)}")
 
     val strings = List("this", "is", "a", "sentence")

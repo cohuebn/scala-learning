@@ -33,7 +33,8 @@ lazy val playground = project
   .settings(
     name := s"$rootName-playground",
     libraryDependencies ++= akkaDependencies,
-    libraryDependencies ++= streamsDependencies
+    libraryDependencies ++= streamsDependencies,
+    libraryDependencies += "org.typelevel" %% "cats-core" % "1.5.0"
   )
 
 lazy val system = project
