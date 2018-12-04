@@ -57,6 +57,5 @@ class CatsSpec extends BaseSpec {
         "b" -> 3
       ))
     }
-
   }
 }

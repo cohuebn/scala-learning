@@ -1,0 +1,136 @@
+# DOA Approver
+swagger: '2.0'
+info:
+  title: Delegation of Authority API
+  description: API returns the Market Funding Delegation of Authority Approval Amount for a DOA Subtype Code  !Special Instruction! - API requires the following parameters: doaSubtypeCode
+  version: v1.0.0
+# CHANGE LOG
+# 07-05-2018: Initial version
+# 10-31-2018: Made DOA Approver User Id optional on the input parameters
+# 11-05-2018: Changed input parameter doaSubTypeCode to array type
+host: api-t.monsanto.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /market-funding/v1
+x-what-is-maximum-number-of-records-that-could-be-returned: 1
+produces:
+  - application/json
+paths:
+  /DOA-approver:
+    get:
+      summary: DOA Approver
+      description: DOA Approver
+      operationId: DOAApprover
+      tags:
+        - DOA Approver Delegation Authority Market Funding
+      parameters:
+        - name: doaSubtypeCode
+          in: query
+          description: DOA Subtype Code identifies the Market Funding Type Code
+          required: true
+          type: array 
+             items: 
+             type: string 
+             format: alpha_1     
+          x-example: 'doaSubtypeCode=1605&doaSubtypeCode=1610' 
+        - name: doaApproverUserId
+          in: query
+          description: DOA Approver User Id
+          required: false
+          type: string
+          format: alpha_10
+       - name: limit
+          in: query
+          description: Limit of results returned. Defaults to 25.
+          required: false
+          type: integer
+          format: int32
+        - name: offset
+          in: query
+          description: Offset of returned results. Defaults to 0.
+          required: false
+          type: integer
+          format: int32
+      responses:
+        200:
+          description: A record of DOA Approval Amount and Position Description for a User 
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/DOAApprover'
+              limit:
+                type: integer
+              offset:
+                type: integer
+          examples:
+            application/json:
+              items:
+                - doaSubtypeCode: 1610
+                  doaApproverUserId: KJCLAR3
+                  doaApproverFristName: Kevin
+                  doaApproverLastName: Clarke
+                  doaPositionNumber: 51021042
+                  doaPositionDescription: Canada Sales Lead
+                  doaStartDate: 2017-02-16
+                  doaEndDate: 9999-12-31
+                  doaAmount: 10000000.00                  
+              limit: 25
+              offset: 0
+        400:
+          description: Missing or invalid query parameter(s)
+          schema:
+            $ref: '#/definitions/error'
+        429:
+          description: Downstream connection limit exceeded
+          schema:
+            $ref: '#/definitions/error'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/error'
+definitions:
+  DOAApprover:
+    type: object
+    properties:
+      doaSubtypeCode:
+        type: string
+        description: DOA Subtype Code
+      doaApproverUserId:
+        type: string
+        description: DOA Approver User Id
+      doaApproverFristName:
+        type: string
+        description: DOA Approver First Name
+      doaApproverLastName:
+        type: string
+        description: DOA Apporver Last Name
+      doaPositionNumber:
+        type: string
+        description: Position Number for the assigned position that can approve the market funding amount
+      doaPositionDescription:
+        type: string
+        description: Position Description for the assigned position that can approve the market funding amount
+      doaStartDate:
+        type: string
+        description: Start Date that the Position is authorized approve
+      doaEndDate:
+        type: string
+        description: End Date that the Position is authorized to approve
+      doaAmount:
+        type: number
+        description: For subtype code of 1605 the Term Amount, for subtype code of 1610 the Dollar Amountamount that approval can occur for
+   error:
+    type: object
+    properties:
+      status:
+        type: string
+      code:
+        type: integer
+        format: int32
+      errorMessage:
+        type: string

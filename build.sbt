@@ -76,3 +76,22 @@ lazy val web = project
       "de.heikoseeberger" %% "akka-http-circe" % "1.22.0"
     )
   )
+
+val EndToEndTest = config("e2e") extend(Test)
+lazy val swaggerMerger = (project in file("swagger-merger"))
+  .configs(EndToEndTest)
+  .enablePlugins(SbtPlugin)
+  .settings(
+    name := "swagger-merger",
+    inConfig(EndToEndTest)(Defaults.testSettings) ++
+      Seq(
+        fork in EndToEndTest := false,
+        parallelExecution in EndToEndTest := false,
+        scalaSource in EndToEndTest := baseDirectory.value / "src/e2e/scala"
+      ),
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-yaml" % "0.9.0",
+      "com.github.pathikrit" %% "better-files" % "3.6.0",
+      "org.scalatest" %% "scalatest" % "3.0.5" % Test
+    )
+  )
