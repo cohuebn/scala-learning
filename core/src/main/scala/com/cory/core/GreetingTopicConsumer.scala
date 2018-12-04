@@ -34,13 +34,18 @@ class GreetingTopicConsumer(consumer: Source[ConsumerRecord[String, String], Con
     case request: LatestGreetingsRequest => {
       replyTo = Option(sender())
       val latestEmissions = consumer
-        .takeWithin(2 seconds)
+        .takeWithin(15 seconds)
+        .log("received", _.value())
         .runWith(Sink.takeLast(request.count))
 
       Source.fromFuture(latestEmissions).runWith(Sink.foreach(consumerRecords => {
+        log.info(s"consumerRecords: $consumerRecords")
         takeSize = Option(consumerRecords.length)
         consumerRecords.map(consumerRecord => GreetingRequest("basic", consumerRecord.value(), Option(context.self)))
-          .foreach(greetingRequest => greetingTranslator ! greetingRequest)
+          .foreach(greetingRequest => {
+            log.info(s"Sending: $greetingRequest")
+            greetingTranslator ! greetingRequest
+          })
       }))
     }
     case greeting: Greeting =>

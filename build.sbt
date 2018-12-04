@@ -12,17 +12,20 @@ lazy val rootName = "cory-learns-scala"
 
 lazy val akkaDependencies = Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
   "org.scalatest" %% "scalatest" % "3.0.5" % Test
 )
 
 lazy val streamsDependencies = akkaDependencies ++ Seq(
-  "com.typesafe.akka" %% "akka-stream" % akkaVersion
+  "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+  "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test
 )
 
 lazy val kafkaDependencies = streamsDependencies ++
   Seq(
-    "com.typesafe.akka" %% "akka-stream-kafka" % "0.21.1",
+    "com.typesafe.akka" %% "akka-stream-kafka" % "1.0-M1",
+    "com.typesafe.akka" %% "akka-stream-kafka-testkit" % "1.0-M1" % Test,
     "ch.qos.logback" % "logback-classic" % "1.2.3"
   )
 
@@ -52,8 +55,7 @@ lazy val core = project
   .settings(
     name := s"$rootName-core",
     libraryDependencies ++= kafkaDependencies,
-    libraryDependencies += "com.github.azakordonets" %% "fabricator" % "2.1.5" % Test,
-    libraryDependencies += "net.manub" %% "scalatest-embedded-kafka" % "2.0.0" % Test
+    libraryDependencies += "com.github.azakordonets" %% "fabricator" % "2.1.5" % Test
   )
 
 lazy val console = project

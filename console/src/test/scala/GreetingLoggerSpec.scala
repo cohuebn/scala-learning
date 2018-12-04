@@ -5,7 +5,7 @@ import com.cory.core.GreetingTranslator.GreetingRequest
 import com.cory.core.test.BaseSpec
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
-class GreetingLoggerSpec extends BaseSpec("GreetingLoggerSpec")
+class GreetingLoggerSpec extends BaseSpec[GreetingLoggerSpec]
   with Matchers
   with WordSpecLike
   with BeforeAndAfterAll {
