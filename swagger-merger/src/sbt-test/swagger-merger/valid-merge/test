@@ -1,0 +1,3 @@
+# check if the Swagger file gets generated
+> mergeSwagger
+> verifyFileExists
