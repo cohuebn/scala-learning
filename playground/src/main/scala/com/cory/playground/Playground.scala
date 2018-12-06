@@ -6,7 +6,7 @@ import java.util.Date
 import com.cory.playground.Variance.LazyConfirmation
 
 object Playground extends App {
-  Tests.runStreamScenario
+  Tests.runTypeClassScenario
 }
 
 object Tests {

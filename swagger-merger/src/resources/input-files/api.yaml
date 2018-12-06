@@ -18,3 +18,4 @@ produces:
 - application/json
 - application/xml
 paths: {}
+definitions: {}

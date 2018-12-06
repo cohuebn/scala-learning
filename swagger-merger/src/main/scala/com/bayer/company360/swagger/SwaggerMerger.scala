@@ -2,12 +2,14 @@ package com.bayer.company360.swagger
 
 import java.io.File
 
-import scaldi.Injectable
+import com.bayer.company360.swagger.SwaggerSchema.SwaggerDoc
 
-class SwaggerMerger(swaggerFileParser: SwaggerFileParser) {
-  def mergeFiles(files: Seq[File]): String = {
-    val fileSources = files.map(swaggerFileParser.parse)
-    "TODO"
+class SwaggerMerger(swaggerConverter: SwaggerConverter) {
+  def mergeFiles(baseFile: File, filesToMerge: Seq[File]): SwaggerDoc = {
+    val baseSwagger = swaggerConverter.parse(baseFile)
+    val swaggerToMerge = filesToMerge.map(swaggerConverter.parse)
+
+    baseSwagger
   }
 
 //  private def getSwaggerDocument(file: File) = {

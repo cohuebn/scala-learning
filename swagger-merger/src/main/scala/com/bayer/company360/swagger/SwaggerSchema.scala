@@ -6,10 +6,12 @@ object SwaggerSchema {
   type PropertyName = String
   type ResponseCode = Int
 
-  case class SwaggerDoc(info: SwaggerInfo,
+  case class SwaggerDoc(swagger: String,
+                        info: SwaggerInfo,
                         host: String,
                         schemes: List[String],
                         basePath: String,
+                       `x-what-is-maximum-number-of-records-that-could-be-returned`: Int,
                         produces: List[String],
                         paths: Map[PathName, SwaggerPath],
                         definitions: Map[DefinitionName, SwaggerDefinition])
@@ -54,16 +56,16 @@ object SwaggerSchema {
                                items: Option[SwaggerRef] = None,
 
                                // only if in == "body"
-                               schema: Option[SwaggerSchema] = None,
+                               schema: Option[SwaggerResponseSchema] = None,
 
                                // can be: csv, ssv, tsv, pipes, multi (e.g., p=7&p=9)
                                //This apparently isn't used right now by those who create Swagger YAML, but it could be used to specify that multiple values can be passed for a parameter in (e.g. customerNumber=1&customerNumber=2). probably only applies to gets
                                collectionFormat: Option[String] = None
                              )
 
-  case class SwaggerResponse(schema: SwaggerSchema)
+  case class SwaggerResponse(schema: SwaggerResponseSchema)
 
-  case class SwaggerSchema(properties: Option[Map[PropertyName, SwaggerProperty]], `type`: Option[String], `$ref`: Option[String])
+  case class SwaggerResponseSchema(properties: Option[Map[PropertyName, SwaggerProperty]], `type`: Option[String], `$ref`: Option[String])
 
   case class SwaggerRef(`$ref`: Option[DefinitionName], `type`: Option[String], format: Option[String])
 }

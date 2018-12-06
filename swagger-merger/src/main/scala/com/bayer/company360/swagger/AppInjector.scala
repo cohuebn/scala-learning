@@ -4,7 +4,7 @@ import scaldi.Module
 
 object AppInjector {
   implicit val injector = new Module {
-    bind [SwaggerFileParser] to new SwaggerFileParser
+    bind [SwaggerConverter] to new SwaggerConverter
     bind [SwaggerMerger] to injected [SwaggerMerger]
   }
 }
