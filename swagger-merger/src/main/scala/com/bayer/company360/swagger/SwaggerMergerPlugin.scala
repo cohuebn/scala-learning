@@ -1,6 +1,9 @@
 package com.bayer.company360.swagger
 
-import sbt._, Keys._
+import sbt._
+import Keys._
+import AppInjector.injector
+import scaldi.Injectable._
 
 object SwaggerMergerPlugin extends AutoPlugin {
   object autoImport {
@@ -16,14 +19,15 @@ object SwaggerMergerPlugin extends AutoPlugin {
     mergeSwaggerPrintInputs := false,
     mergeSwaggerOutputFilename := "api.swagger.yaml",
     mergeSwagger := {
-      val filteredFiles = baseDirectory.value ** mergeSwaggerInputFilter.value
+      val filteredFiles = (baseDirectory.value ** mergeSwaggerInputFilter.value).get
       if (mergeSwaggerPrintInputs.value) {
         println(s"The following files will be merged into ${mergeSwaggerOutputFilename.value}")
-        filteredFiles.get().foreach(x => println(s"\t- ${x.getCanonicalPath}"))
+        filteredFiles.foreach(x => println(s"\t- ${x.getCanonicalPath}"))
       }
 
       val generatedFile = (resourceManaged in mergeSwagger).value / mergeSwaggerOutputFilename.value
-      IO.write(generatedFile, "iWork: {}")
+      val generatedContents = inject[SwaggerMerger].mergeFiles(filteredFiles)
+      IO.write(generatedFile, generatedContents)
       println(s"Generated file ${generatedFile}")
     }
   )
