@@ -28,9 +28,10 @@ object DataGenerator {
     )
   }
 
-  def swaggerInfo(title: Option[String] = None, version: Option[String] = None) = {
+  def swaggerInfo(title: Option[String] = None, description: Option[String] = None, version: Option[String] = None) = {
     new SwaggerInfo(
       title.getOrElse(Lorem.sentence()),
+      description,
       version.getOrElse("0.0.1-dontcare")
     )
   }

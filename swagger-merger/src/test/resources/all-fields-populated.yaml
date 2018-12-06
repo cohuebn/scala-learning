@@ -1,0 +1,154 @@
+# Swagger file with all fields populated with data
+swagger: '2.0'
+info:
+  title: A fancy title
+  description: This API will change your life
+  version: v67
+# CHANGE LOG
+# 07-05-2018: Initial version
+host: a.domain.com
+# array of all schemes that your API supports
+schemes:
+- https
+- http
+# will be prefixed to all paths
+basePath: /wacky-cat-pics/v6
+x-what-is-maximum-number-of-records-that-could-be-returned: 33
+produces:
+- application/json
+- image/png
+- image/gif
+- image/jpeg
+paths:
+  /wearing-hats:
+    get:
+      summary: Cats in hats
+      description: You should understand this endpoint by now
+      operationId: cats-in-hats
+      tags:
+      - kitties
+      - outerwear
+      parameters:
+      - name: hat-category
+        in: query
+        description: Only show pictures from the given hat categories
+        required: true
+        type: array
+        items:
+          type: string
+          format: alpha_1
+        x-example: 'hat-category=flowered&hat-category=fireman'
+      - name: limit
+        in: query
+        description: Limit of results returned. Defaults to 25.
+        required: false
+        type: integer
+        format: int32
+      - name: offset
+        in: query
+        description: Offset of returned results. Defaults to 0.
+        required: false
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: A list of matching cats-in-hats images
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/catListing'
+              limit:
+                type: integer
+              offset:
+                type: integer
+          examples:
+            application/json:
+              items:
+              - url: "http://cats-fo-days.com/1234"
+                name: "Whisker joe"
+                views: 3
+              limit: 25
+              offset: 0
+        400:
+          description: Missing or invalid query parameter(s)
+          schema:
+            $ref: '#/definitions/error'
+        429:
+          description: Downstream connection limit exceeded
+          schema:
+            $ref: '#/definitions/error'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/error'
+  /search-the-interwebs:
+    post:
+      summary: search the whole internet for matching pics
+      description: impressive feat of technology
+      operationId: search-the-interwebs
+      tags:
+      - al gore
+      - kitties
+      parameters:
+      - in: body
+        name: search
+        description: The search criteria
+        schema:
+          $ref: "#/definitions/searchCriteria"
+      - name: limit
+        in: query
+        description: Limit of results returned. Defaults to 25.
+        required: false
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: A list of matching cats images
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/catInHatListing'
+              limit:
+                type: integer
+        400:
+          description: Missing or invalid query parameter(s)
+          schema:
+            $ref: '#/definitions/error'
+        429:
+          description: Downstream connection limit exceeded
+          schema:
+            $ref: '#/definitions/error'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/error'
+
+definitions:
+  catListing:
+    type: object
+    properties:
+      url:
+        type: string
+        description: The url for the cat pic
+      name:
+        type: string
+        description: The name of the cat
+      views:
+        type: number
+        description: The number of times this picture has been viewed
+  error:
+    type: object
+    properties:
+      status:
+        type: string
+      code:
+        type: integer
+        format: int32
+      errorMessage:
+        type: string

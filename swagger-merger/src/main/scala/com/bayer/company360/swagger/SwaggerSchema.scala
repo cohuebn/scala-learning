@@ -17,6 +17,7 @@ object SwaggerSchema {
                         definitions: Map[DefinitionName, SwaggerDefinition])
 
   case class SwaggerInfo(title: String,
+                         description: Option[String],
                          version: String)
 
   case class SwaggerPath(get: Option[SwaggerOperation],

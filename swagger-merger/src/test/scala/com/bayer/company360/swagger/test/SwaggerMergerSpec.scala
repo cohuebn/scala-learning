@@ -4,15 +4,9 @@ import java.io.File
 
 import com.bayer.company360.swagger.SwaggerSchema._
 import com.bayer.company360.swagger.{SwaggerConverter, SwaggerMerger}
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpecLike}
 import faker._
 
-class SwaggerMergerSpec extends WordSpecLike
-  with Matchers
-  with BeforeAndAfterEach
-  with MockFactory
-  with WrapsInOption {
+class SwaggerMergerSpec extends Spec {
   var swaggerConverter: SwaggerConverter = _
   var swaggerMerger: SwaggerMerger = _
 
@@ -28,7 +22,7 @@ class SwaggerMergerSpec extends WordSpecLike
       val filesToMerge = Seq(new File("blah"), new File("another"))
 
       val baseSwaggerDoc = DataGenerator.swaggerDoc(
-        info = new SwaggerInfo(Lorem.sentence(), "0.0.1-fake"),
+        info = new SwaggerInfo(Lorem.sentence(), None, "0.0.1-fake"),
         host = "theexpectedhost.com",
         schemes = List(Lorem.sentence(1), Lorem.sentence(1)),
         basePath = "the-expected-base-path",
