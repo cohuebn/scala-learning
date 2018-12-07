@@ -9,11 +9,17 @@ class SwaggerMerger(swaggerConverter: SwaggerConverter) {
     val baseSwagger = swaggerConverter.parse(baseFile)
     val swaggerToMerge = filesToMerge.map(swaggerConverter.parse)
 
-    baseSwagger
+    swaggerToMerge.fold(baseSwagger)((mergedSwagger, currentSwaggerDoc) =>
+      mergedSwagger.copy(
+        paths = mergeMaps(mergedSwagger.paths, currentSwaggerDoc.paths),
+        definitions = mergeMaps(mergedSwagger.definitions, currentSwaggerDoc.definitions)
+      )
+    )
   }
 
-//  private def getSwaggerDocument(file: File) = {
-//    FileIO.fromPath(file.toPath)
-//      .reduce((fileBytes, segmentBytes) => fileBytes.concat(segmentBytes))
-//  }
+  private def mergeMaps[T, V](map1: Map[T, V], map2: Map[T, V]) = {
+    map2.foldLeft(map1) { case (aggregateMap: Map[T, V], (key, value)) =>
+      aggregateMap.updated(key, value)
+    }
+  }
 }

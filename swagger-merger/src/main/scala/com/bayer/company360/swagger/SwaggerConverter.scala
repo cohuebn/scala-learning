@@ -17,21 +17,9 @@ class SwaggerConverter {
       case Left(failure) => throw failure
       case Right(json) => json.as[SwaggerDoc].getOrElse(throw new Exception(s"Failed to convert file ${file.getAbsolutePath} to Swagger doc"))
     }
-
-//    new SwaggerDoc(
-//      "2.1",
-//      new SwaggerInfo("blah", "blah"),
-//      "the-host",
-//      List("bogus-scheme"),
-//      "/thebase/path/v1",
-//      1,
-//      List("application/json"),
-//      Map(),
-//      Map()
-//    )
   }
 
   def toYaml(swaggerDoc: SwaggerDoc): String = {
-    Printer(preserveOrder = true, indent = 2).pretty(swaggerDoc.asJson)
+    Printer(preserveOrder = true, indent = 2, dropNullKeys = true).pretty(swaggerDoc.asJson)
   }
 }
