@@ -11,7 +11,7 @@ object SwaggerSchema {
                         host: String,
                         schemes: List[String],
                         basePath: String,
-                       `x-what-is-maximum-number-of-records-that-could-be-returned`: Int,
+                        `x-what-is-maximum-number-of-records-that-could-be-returned`: Int,
                         produces: List[String],
                         paths: Map[PathName, SwaggerPath],
                         definitions: Map[DefinitionName, SwaggerDefinition])
@@ -23,10 +23,10 @@ object SwaggerSchema {
   case class SwaggerPath(get: Option[SwaggerOperation],
                          post: Option[SwaggerOperation]) {
 
-    def operationNameAndValue: (String,SwaggerOperation) = (get, post) match {
+    def operationNameAndValue: (String, SwaggerOperation) = (get, post) match {
       case (Some(_), Some(_)) => throw new RuntimeException(s"all SwaggerPath objects must have either a get or a post SwaggerOperation, but not both")
-      case (_, Some(postOp)) => ("post",postOp)
-      case (Some(getOp), _) => ("get",getOp)
+      case (_, Some(postOp)) => ("post", postOp)
+      case (Some(getOp), _) => ("get", getOp)
       case (None, None) => throw new RuntimeException(s"all SwaggerPath objects must have either a get or post SwaggerOperation")
     }
   }
@@ -36,37 +36,45 @@ object SwaggerSchema {
                                properties: Option[Map[PropertyName, SwaggerProperty]],
                                `$ref`: Option[String])
 
-  case class SwaggerOperation(parameters: List[SwaggerParameter],
+  case class SwaggerOperation(summary: Option[String],
+                              description: Option[String],
+                              operationId: Option[String],
+                              tags: Option[List[String]],
+                              parameters: List[SwaggerParameter],
                               responses: Map[ResponseCode, SwaggerResponse])
 
   case class SwaggerProperty(`type`: Option[String],
+                             description: Option[String],
                              format: Option[String],
                              items: Option[SwaggerRef],
                              `$ref`: Option[DefinitionName])
 
-  case class SwaggerParameter(
-                               name: String, // "globalFiscalYear", "limit", "offset", "rowUpdateTimestamp", etc
-                               in: String, // GETs have many parameters, each having "in:query".  POSTs have one parameter, with "in: body" and a body definition
-                               required: Option[Boolean],
+  case class SwaggerParameter(name: String, // "globalFiscalYear", "limit", "offset", "rowUpdateTimestamp", etc
+                              description: Option[String],
+                              in: String, // GETs have many parameters, each having "in:query".  POSTs have one parameter, with "in: body" and a body definition
+                              required: Option[Boolean],
 
-                               // only if in != "body"
-                               format: Option[String], // "ISO 4217", "YYYY-MM-DD", ...     or None if format is simply a basic string or number
-                               `type`: Option[String], // "string", "integer", "number", etc
+                              // only if in != "body"
+                              format: Option[String], // "ISO 4217", "YYYY-MM-DD", ...     or None if format is simply a basic string or number
+                              `type`: Option[String], // "string", "integer", "number", etc
 
-                               // only if in == "array"
-                               items: Option[SwaggerRef] = None,
+                              // only if in == "array"
+                              items: Option[SwaggerRef] = None,
 
-                               // only if in == "body"
-                               schema: Option[SwaggerResponseSchema] = None,
+                              // only if in == "body"
+                              schema: Option[SwaggerResponseSchema] = None,
 
-                               // can be: csv, ssv, tsv, pipes, multi (e.g., p=7&p=9)
-                               //This apparently isn't used right now by those who create Swagger YAML, but it could be used to specify that multiple values can be passed for a parameter in (e.g. customerNumber=1&customerNumber=2). probably only applies to gets
-                               collectionFormat: Option[String] = None
+                              // can be: csv, ssv, tsv, pipes, multi (e.g., p=7&p=9)
+                              //This apparently isn't used right now by those who create Swagger YAML, but it could be used to specify that multiple values can be passed for a parameter in (e.g. customerNumber=1&customerNumber=2). probably only applies to gets
+                              collectionFormat: Option[String] = None,
+                              `x-example`: Option[String] = None
                              )
 
-  case class SwaggerResponse(schema: SwaggerResponseSchema)
+  case class SwaggerResponse(description: Option[String], schema: SwaggerResponseSchema)
 
   case class SwaggerResponseSchema(properties: Option[Map[PropertyName, SwaggerProperty]], `type`: Option[String], `$ref`: Option[String])
 
   case class SwaggerRef(`$ref`: Option[DefinitionName], `type`: Option[String], format: Option[String])
+
+  // TODO -  determine how to parse dynamic data in Response "examples" fields
 }

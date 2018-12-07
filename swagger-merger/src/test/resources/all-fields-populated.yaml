@@ -97,7 +97,7 @@ paths:
         name: search
         description: The search criteria
         schema:
-          $ref: "#/definitions/searchCriteria"
+          $ref: '#/definitions/searchCriteria'
       - name: limit
         in: query
         description: Limit of results returned. Defaults to 25.
@@ -113,17 +113,9 @@ paths:
               items:
                 type: array
                 items:
-                  $ref: '#/definitions/catInHatListing'
+                  $ref: '#/definitions/catListing'
               limit:
                 type: integer
-        400:
-          description: Missing or invalid query parameter(s)
-          schema:
-            $ref: '#/definitions/error'
-        429:
-          description: Downstream connection limit exceeded
-          schema:
-            $ref: '#/definitions/error'
         500:
           description: Internal server error
           schema:

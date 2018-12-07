@@ -13,4 +13,9 @@ trait Spec extends WordSpecLike
   def getResourceAsFile(resourceName: String) = {
     new File(getClass.getClassLoader.getResource(resourceName).toURI)
   }
+
+  def assertOnOption[T](option: Option[T])(assertion: T => Unit) = {
+    option should not be empty
+    assertion(option.get)
+  }
 }
