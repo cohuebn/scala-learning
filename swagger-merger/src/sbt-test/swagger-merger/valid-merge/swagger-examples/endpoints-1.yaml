@@ -2,7 +2,7 @@
 swagger: '2.0'
 info:
   title: Delegation of Authority API
-  description: API returns the Market Funding Delegation of Authority Approval Amount for a DOA Subtype Code  !Special Instruction! - API requires the following parameters: doaSubtypeCode
+  description: "API returns the Market Funding Delegation of Authority Approval Amount for a DOA Subtype Code  !Special Instruction! - API requires the following parameters: doaSubtypeCode"
   version: v1.0.0
 # CHANGE LOG
 # 07-05-2018: Initial version
@@ -31,9 +31,9 @@ paths:
           description: DOA Subtype Code identifies the Market Funding Type Code
           required: true
           type: array 
-             items: 
-             type: string 
-             format: alpha_1     
+          items:
+            type: string
+            format: alpha_1
           x-example: 'doaSubtypeCode=1605&doaSubtypeCode=1610' 
         - name: doaApproverUserId
           in: query
@@ -41,7 +41,7 @@ paths:
           required: false
           type: string
           format: alpha_10
-       - name: limit
+        - name: limit
           in: query
           description: Limit of results returned. Defaults to 25.
           required: false
@@ -124,7 +124,7 @@ definitions:
       doaAmount:
         type: number
         description: For subtype code of 1605 the Term Amount, for subtype code of 1610 the Dollar Amountamount that approval can occur for
-   error:
+  error:
     type: object
     properties:
       status:

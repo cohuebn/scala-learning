@@ -37,6 +37,7 @@ class SwaggerMergerSpec extends Spec {
       val result = swaggerMerger.mergeFiles(baseFile, filesToMerge)
 
       result.info.title should equal(baseSwaggerDoc.info.title)
+      result.info.description should equal(baseSwaggerDoc.info.description)
       result.info.version should equal(baseSwaggerDoc.info.version)
       result.host should equal(baseSwaggerDoc.host)
       result.schemes should equal(baseSwaggerDoc.schemes)
