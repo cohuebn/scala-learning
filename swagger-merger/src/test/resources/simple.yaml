@@ -1,0 +1,30 @@
+# Swagger file with all fields populated with data
+swagger: '2.0'
+info:
+  title: A fancy title
+  description: This API will change your life
+  version: v67
+# CHANGE LOG
+# 07-05-2018: Initial version
+host: a.domain.com
+# array of all schemes that your API supports
+schemes:
+- https
+# will be prefixed to all paths
+basePath: /wacky-cat-pics/v6
+x-what-is-maximum-number-of-records-that-could-be-returned: 33
+produces:
+- application/json
+paths:
+  /simple:
+    get:
+      parameters: []
+      responses:
+        200:
+          schema:
+            type: object
+            properties: {}
+          examples:
+            application/json:
+              should-not-be-scientific: 1610
+definitions: {}

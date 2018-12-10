@@ -3,12 +3,10 @@ package com.bayer.company360.swagger
 import java.io.{File, FileInputStream, InputStreamReader}
 
 import com.bayer.company360.swagger.SwaggerSchema.SwaggerDoc
-import io.circe.{Json, ParsingFailure}
+import com.bayer.company360.swagger.SwaggerSchema._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.yaml.{Printer, parser}
-
-import scala.util.{Failure, Success, Try}
 
 class SwaggerConverter {
   def parse(file: File): SwaggerDoc = {

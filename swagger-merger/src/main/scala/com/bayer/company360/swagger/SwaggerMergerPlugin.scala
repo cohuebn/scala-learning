@@ -37,7 +37,7 @@ object SwaggerMergerPlugin extends AutoPlugin {
       val mergedSwagger = inject[SwaggerMerger].mergeFiles(baseFile, filesToMerge)
       val mergedSwaggerYaml = inject[SwaggerConverter].toYaml(mergedSwagger)
       IO.write(generatedFile, mergedSwaggerYaml)
-      IO.write(new File("c:/tmp/test.yaml"), mergedSwaggerYaml) // TODO - remove after original dev done
+      IO.write(new File("/tmp/test.yaml"), mergedSwaggerYaml) // TODO - remove after original dev done
       println(s"Generated file ${generatedFile}")
     }
   )

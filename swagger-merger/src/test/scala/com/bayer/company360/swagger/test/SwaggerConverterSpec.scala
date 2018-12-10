@@ -122,6 +122,17 @@ class SwaggerConverterSpec extends Spec {
                   limit.`type` should equal(Some("integer"))
                 }
               }
+
+              assertOnOption(response.examples) { examples =>
+                examples.keys should contain theSameElementsAs Seq("application/json")
+                val jsonExample = examples.get("application/json")
+                val firstItem = jsonExample.get.hcursor.downField("items").downN(0)
+                firstItem.downField("url").as[String].right.value should equal("http://cats-fo-days.com/1234")
+                firstItem.downField("name").as[String].right.value should equal("Whisker joe")
+                firstItem.downField("views").as[Int].right.value should equal(3)
+                jsonExample.get.hcursor.downField("limit").as[Int].right.value should equal(25)
+                jsonExample.get.hcursor.downField("offset").as[Int].right.value should equal(0)
+              }
             }
 
             assertOnOption(responseByStatus(400)) { response =>
@@ -247,6 +258,20 @@ class SwaggerConverterSpec extends Spec {
             }}
           }
         }
+      }
+    }
+
+    "using simple data" should {
+      val simpleTestCase = getResourceAsFile("simple.yaml")
+
+      "represent numbers without scientific notation" in {
+        val parsed = swaggerConverter.parse(simpleTestCase)
+        val encoded = swaggerConverter.toYaml(parsed)
+
+        println(encoded)
+        val actualExampleLocator = "(?<=should-not-be-scientific: ).*".r
+        val actualExampleValue = actualExampleLocator.findFirstMatchIn(encoded)
+        actualExampleValue.get should equal("1610")
       }
     }
   }

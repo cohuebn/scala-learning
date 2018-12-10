@@ -1,10 +1,13 @@
 package com.bayer.company360.swagger
 
+import io.circe.{Json, Decoder, Encoder, HCursor}
+
 object SwaggerSchema {
   type PathName = String
   type DefinitionName = String
   type PropertyName = String
   type ResponseCode = Int
+  type SwaggerExamples = Map[String, Json]
 
   case class SwaggerDoc(swagger: String,
                         info: SwaggerInfo,
@@ -70,11 +73,12 @@ object SwaggerSchema {
                               `x-example`: Option[String] = None
                              )
 
-  case class SwaggerResponse(description: Option[String], schema: SwaggerResponseSchema)
+  case class SwaggerResponse(description: Option[String], schema: SwaggerResponseSchema, examples: Option[SwaggerExamples])
 
   case class SwaggerResponseSchema(properties: Option[Map[PropertyName, SwaggerProperty]], `type`: Option[String], `$ref`: Option[String])
 
   case class SwaggerRef(`$ref`: Option[DefinitionName], `type`: Option[String], format: Option[String])
-
-  // TODO -  determine how to parse dynamic data in Response "examples" fields
+//
+//  implicit val BigDecimalCodecs: Decoder[BigDecimal] = (c: HCursor) => Decoder.decodeBigDecimal.map(x => BigDecimal(x.bigDecimal.toPlainString))(c)
+//  implicit val BigDecimalEncoder: Encoder[BigDecimal] = Encoder.encodeDouble.contramap(_.doubleValue)
 }
