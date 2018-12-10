@@ -35,7 +35,13 @@ lazy val playground = project
     name := s"$rootName-playground",
     libraryDependencies ++= akkaDependencies,
     libraryDependencies ++= streamsDependencies,
-    libraryDependencies += "org.typelevel" %% "cats-core" % "1.5.0",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats-core" % "1.5.0",
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion,
+      "io.circe" %% "circe-jawn" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion
+    )
   )
 
 lazy val system = project
