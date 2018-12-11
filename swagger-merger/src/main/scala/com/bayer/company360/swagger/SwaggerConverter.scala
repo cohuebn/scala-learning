@@ -25,7 +25,7 @@ class SwaggerConverter {
 
   private implicit class YamlString(value: String) {
     private val format = new java.text.DecimalFormat("0.############")
-    private val scientificNotationPattern = """(?:!!\w+ ')?(\d+)e([\-]?\d+)(?:')?""".r
+    private val scientificNotationPattern = """(?:!!\w+ ')?(-?\d+)e(-?\d+)(?:')?""".r
 
     def scientificNotationToDecimal: String = {
       scientificNotationPattern.replaceAllIn(value, _ match {

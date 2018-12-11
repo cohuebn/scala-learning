@@ -269,16 +269,20 @@ class SwaggerConverterSpec extends Spec {
         val parsed = swaggerConverter.parse(simpleTestCase)
         val encoded = swaggerConverter.toYaml(parsed)
 
-        val getValue = (fieldName: String) => {
-          val valueLocator = s"$fieldName: (.*)".r
-          valueLocator.findFirstMatchIn(encoded) match {
-            case Some(Groups(actual)) => actual
-            case _ => fail(s"Did not find expected '$fieldName' element")
-          }
+        Seq(
+          ("should-not-be-scientific", "1610"),
+          ("tiny-number", "0.0000001"),
+          ("big-number", "1234500000000"),
+          ("tiny-negative-number", "-0.0000001"),
+          ("big-negative-number", "-1234500000000")
+        ).foreach {
+          case (fieldName: String, expected: String) =>
+            val valueLocator = s"$fieldName: (.*)".r
+            valueLocator.findFirstMatchIn(encoded) match {
+              case Some(Groups(actual)) => actual should equal(expected)
+              case _ => fail(s"Did not find expected '$fieldName' element")
+            }
         }
-        getValue("should-not-be-scientific") should equal("1610")
-        getValue("tiny-number") should equal("0.0000001")
-        getValue("big-number") should equal("1234500000000")
       }
     }
   }
