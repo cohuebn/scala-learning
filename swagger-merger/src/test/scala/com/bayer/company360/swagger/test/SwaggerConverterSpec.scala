@@ -269,11 +269,16 @@ class SwaggerConverterSpec extends Spec {
         val parsed = swaggerConverter.parse(simpleTestCase)
         val encoded = swaggerConverter.toYaml(parsed)
 
-        val actualExampleLocator = "should-not-be-scientific: (.*)".r
-        actualExampleLocator.findFirstMatchIn(encoded) match {
-          case Groups(actual) => actual should equal("1610")
-          case _ => fail("Did not find expected 'should-not-be-scientific' element")
+        val getValue = (fieldName: String) => {
+          val valueLocator = s"$fieldName: (.*)".r
+          valueLocator.findFirstMatchIn(encoded) match {
+            case Some(Groups(actual)) => actual
+            case _ => fail(s"Did not find expected '$fieldName' element")
+          }
         }
+        getValue("should-not-be-scientific") should equal("1610")
+        getValue("tiny-number") should equal("0.0000001")
+        getValue("big-number") should equal("1234500000000")
       }
     }
   }

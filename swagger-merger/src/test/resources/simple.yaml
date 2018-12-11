@@ -27,4 +27,6 @@ paths:
           examples:
             application/json:
               should-not-be-scientific: 1610
+              tiny-number: 0.0000001
+              big-number: 1234500000000
 definitions: {}

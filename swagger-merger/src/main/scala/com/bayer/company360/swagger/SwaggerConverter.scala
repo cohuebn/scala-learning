@@ -17,21 +17,22 @@ class SwaggerConverter {
     }
   }
 
-  private def toDecimalNotation(yamlString: String) = {
-    import java.text.DecimalFormat
-    val format = new DecimalFormat("0.#")
-    val scientificNotationPattern = """!!\w+ '(\d+)e(\d+)'""".r
-    scientificNotationPattern.replaceAllIn(yamlString, _ match {
-      case Groups(coefficient, magnitude) =>
-        val rawConversion = (coefficient.toDouble * scala.math.pow(10, magnitude.toDouble))
-        format.format(rawConversion)
-    })
+  def toYaml(swaggerDoc: SwaggerDoc): String = {
+    Printer(preserveOrder = true, indent = 2, dropNullKeys = true)
+      .pretty(swaggerDoc.asJson)
+      .scientificNotationToDecimal
   }
 
-  def toYaml(swaggerDoc: SwaggerDoc): String = {
-    val printed = Printer(preserveOrder = true, indent = 2, dropNullKeys = true)
-      .pretty(swaggerDoc.asJson)
+  private implicit class YamlString(value: String) {
+    private val format = new java.text.DecimalFormat("0.############")
+    private val scientificNotationPattern = """(?:!!\w+ ')?(\d+)e([\-]?\d+)(?:')?""".r
 
-    toDecimalNotation(printed)
+    def scientificNotationToDecimal: String = {
+      scientificNotationPattern.replaceAllIn(value, _ match {
+        case Groups(mantissa, exponent) =>
+          val rawConversion = (mantissa.toDouble * scala.math.pow(10, exponent.toDouble))
+          format.format(rawConversion)
+      })
+    }
   }
 }
