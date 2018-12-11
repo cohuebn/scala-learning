@@ -2,6 +2,7 @@ package com.bayer.company360.swagger.test
 
 import com.bayer.company360.swagger.SwaggerConverter
 import com.bayer.company360.swagger.SwaggerSchema.PathName
+import scala.util.matching.Regex.Groups
 
 class SwaggerConverterSpec extends Spec {
   var swaggerConverter: SwaggerConverter = _
@@ -268,10 +269,11 @@ class SwaggerConverterSpec extends Spec {
         val parsed = swaggerConverter.parse(simpleTestCase)
         val encoded = swaggerConverter.toYaml(parsed)
 
-        println(encoded)
-        val actualExampleLocator = "(?<=should-not-be-scientific: ).*".r
-        val actualExampleValue = actualExampleLocator.findFirstMatchIn(encoded)
-        actualExampleValue.get should equal("1610")
+        val actualExampleLocator = "should-not-be-scientific: (.*)".r
+        actualExampleLocator.findFirstMatchIn(encoded) match {
+          case Groups(actual) => actual should equal("1610")
+          case _ => fail("Did not find expected 'should-not-be-scientific' element")
+        }
       }
     }
   }
