@@ -6,14 +6,18 @@ import com.bayer.company360.swagger.SwaggerSchema.SwaggerDoc
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.yaml.{Printer, parser}
+
 import scala.util.matching.Regex.Groups
+import scala.util.{Failure, Success, Try}
 
 class SwaggerConverter {
-  def parse(file: File): SwaggerDoc = {
+  def parse(file: File): Try[SwaggerDoc] = {
     val parsedFile = parser.parse(new InputStreamReader(new FileInputStream(file)))
+        .flatMap(json => json.as[SwaggerDoc])
+
     parsedFile match {
-      case Left(failure) => throw failure
-      case Right(json) => json.as[SwaggerDoc].getOrElse(throw new Exception(s"Failed to convert file ${file.getAbsolutePath} to Swagger doc"))
+      case Left(failure) => Failure(new FileException(file, failure))
+      case Right(swaggerDoc) => Success(swaggerDoc)
     }
   }
 

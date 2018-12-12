@@ -1,67 +1,95 @@
 package com.bayer.company360.swagger.test
 
-import com.bayer.company360.swagger.SwaggerConverter
-import com.bayer.company360.swagger.SwaggerSchema.PathName
+import java.io.File
+
+import com.bayer.company360.swagger.{FileException, SwaggerConverter}
+import com.bayer.company360.swagger.SwaggerSchema.{PathName, SwaggerDoc}
+import io.circe.{DecodingFailure, ParsingFailure}
+
 import scala.util.matching.Regex.Groups
 
 class SwaggerConverterSpec extends Spec {
-  var swaggerConverter: SwaggerConverter = _
+  trait Setup {
+    val swaggerConverter = new SwaggerConverter
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    swaggerConverter = new SwaggerConverter
+    def parseValidFile(file: File): SwaggerDoc = {
+      val parsed = swaggerConverter.parse(file)
+      parsed.success.value
+    }
   }
 
   "A swagger converter" when {
+    "unparsable file" should {
+      "return the parsing failure" in new Setup {
+        val invalidYamlTestCase = getResourceAsFile("invalid-yaml.yaml")
+        val parsed = swaggerConverter.parse(invalidYamlTestCase)
+
+        parsed.failure.exception shouldBe a[FileException]
+        parsed.failure.exception.getCause shouldBe a[ParsingFailure]
+        parsed.failure.exception.getMessage should include("invalid-yaml.yaml")
+      }
+    }
+
+    "invalid data" should {
+      "return the decoding failure" in new Setup {
+        val invalidDataTestCase = getResourceAsFile("invalid-data.yaml")
+        val parsed = swaggerConverter.parse(invalidDataTestCase)
+
+        parsed.failure.exception shouldBe a[FileException]
+        parsed.failure.exception.getCause shouldBe a[DecodingFailure]
+        parsed.failure.exception.getMessage should include("invalid-data.yaml")
+      }
+    }
+
     "swagger fields are populated" should {
       val allFieldsPopulatedTestCase = getResourceAsFile("all-fields-populated.yaml")
 
-      "parse the swagger version" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse the swagger version" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
         parsed.swagger should equal("2.0")
       }
 
-      "parse the info element" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse the info element" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
         parsed.info.title should equal("A fancy title")
         parsed.info.description should equal(Some("This API will change your life"))
         parsed.info.version should equal("v67")
       }
 
-      "parse the host element" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse the host element" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
         parsed.host should equal("a.domain.com")
       }
 
-      "parse the schemes element" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse the schemes element" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
         parsed.schemes should contain theSameElementsInOrderAs List("https", "http")
       }
 
-      "parse the base path element" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse the base path element" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
         parsed.basePath should equal("/wacky-cat-pics/v6")
       }
 
-      "parse the max records element" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse the max records element" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
         parsed.`x-what-is-maximum-number-of-records-that-could-be-returned` should equal(33)
       }
 
-      "parse the produces element" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse the produces element" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
         val expected = Seq("application/json", "image/png", "image/gif", "image/jpeg")
         parsed.produces should contain theSameElementsInOrderAs expected
       }
 
-      "parse all paths" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse all paths" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
         val expected = Set[PathName]("/wearing-hats", "/search-the-interwebs")
         parsed.paths.keys should contain theSameElementsAs expected
       }
 
-      "parse a 'get' path" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse a 'get' path" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
 
         assertOnOption(parsed.paths.get("/wearing-hats")) { path =>
           path.get should not be None
@@ -154,8 +182,8 @@ class SwaggerConverterSpec extends Spec {
         }
       }
 
-      "parse a 'post' path" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse a 'post' path" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
 
         assertOnOption(parsed.paths.get("/search-the-interwebs")) { path =>
           path.get should be(None)
@@ -212,8 +240,8 @@ class SwaggerConverterSpec extends Spec {
         }
       }
 
-      "parse definitions" in {
-        val parsed = swaggerConverter.parse(allFieldsPopulatedTestCase)
+      "parse definitions" in new Setup {
+        val parsed = parseValidFile(allFieldsPopulatedTestCase)
 
         parsed.definitions.keys should contain theSameElementsAs(Seq("catListing", "error"))
 
@@ -265,8 +293,8 @@ class SwaggerConverterSpec extends Spec {
     "using simple data" should {
       val simpleTestCase = getResourceAsFile("simple.yaml")
 
-      "represent numbers without scientific notation" in {
-        val parsed = swaggerConverter.parse(simpleTestCase)
+      "represent numbers without scientific notation" in new Setup {
+        val parsed = parseValidFile(simpleTestCase)
         val encoded = swaggerConverter.toYaml(parsed)
 
         Seq(

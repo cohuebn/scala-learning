@@ -3,14 +3,14 @@ package com.bayer.company360.swagger.test
 import java.io.File
 
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{BeforeAndAfterEach, EitherValues, Matchers, WordSpecLike}
+import org.scalatest._
 
 trait Spec extends WordSpecLike
   with Matchers
-  with BeforeAndAfterEach
   with MockFactory
   with WrapsInOption
-  with EitherValues {
+  with EitherValues
+  with TryValues {
   def getResourceAsFile(resourceName: String) = {
     new File(getClass.getClassLoader.getResource(resourceName).toURI)
   }

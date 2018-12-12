@@ -5,6 +5,8 @@ import Keys._
 import AppInjector.injector
 import scaldi.Injectable._
 
+import scala.util.{Failure, Success}
+
 object SwaggerMergerPlugin extends AutoPlugin {
   object autoImport {
     val mergeSwaggerInputFilter = settingKey[FileFilter]("Determines which files should be merged together")
@@ -35,10 +37,14 @@ object SwaggerMergerPlugin extends AutoPlugin {
 
       val generatedFile = (resourceManaged in mergeSwagger).value / mergeSwaggerOutputFilename.value
       val mergedSwagger = inject[SwaggerMerger].mergeFiles(baseFile, filesToMerge)
-      val mergedSwaggerYaml = inject[SwaggerConverter].toYaml(mergedSwagger)
-      IO.write(generatedFile, mergedSwaggerYaml)
-      IO.write(new File("/tmp/test.yaml"), mergedSwaggerYaml) // TODO - remove after original dev done
-      println(s"Generated file ${generatedFile}")
+      mergedSwagger match {
+        case Failure(failure) => throw failure
+        case Success(mergedSwagger) =>
+          val mergedSwaggerYaml = inject[SwaggerConverter].toYaml(mergedSwagger)
+          IO.write(generatedFile, mergedSwaggerYaml)
+          IO.write(new File("/tmp/test.yaml"), mergedSwaggerYaml) // TODO - remove after original dev done
+          println(s"Generated file ${generatedFile}")
+      }
     }
   )
 }

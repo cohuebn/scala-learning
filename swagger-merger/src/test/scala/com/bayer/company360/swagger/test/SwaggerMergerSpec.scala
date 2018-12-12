@@ -4,8 +4,10 @@ import java.io.File
 
 import com.bayer.company360.swagger.SwaggerSchema._
 import com.bayer.company360.swagger.test.DataGenerator.HttpMethod
-import com.bayer.company360.swagger.{SwaggerConverter, SwaggerMerger}
+import com.bayer.company360.swagger.{AggregateThrowable, SwaggerConverter, SwaggerMerger}
 import faker._
+
+import scala.util.{Failure, Success}
 
 class SwaggerMergerSpec extends Spec {
   trait Setup {
@@ -27,17 +29,33 @@ class SwaggerMergerSpec extends Spec {
       ))
     )
 
-    (swaggerConverter.parse(_)).when(baseFile).returns(baseSwaggerDoc)
+    (swaggerConverter.parse(_)).when(baseFile).returns(Success(baseSwaggerDoc))
+
+    def mergeValidFiles(baseFile: File, filesToMerge: Seq[File]) = {
+      val mergeResult = swaggerMerger.mergeFiles(baseFile, filesToMerge)
+      mergeResult.success.value
+    }
   }
 
   "A swagger merger" should {
+    "aggregate all file parsing failures" in new Setup {
+      val filesToMerge = (1 to 2).map(counter => new File(s"file-$counter"))
+      val docs = filesToMerge.map(_ => DataGenerator.swaggerDoc())
+      (swaggerConverter.parse(_)).when(filesToMerge.head).returns(Failure(new Exception("Whoopsie doopsies")))
+      (swaggerConverter.parse(_)).when(filesToMerge.last).returns(Failure(new Exception("Ouchy")))
+
+      val result = swaggerMerger.mergeFiles(baseFile, filesToMerge)
+
+      result.failure.exception shouldBe a[AggregateThrowable]
+    }
+
     "use base file for top-level information" in new Setup {
       val filesToMerge = (1 to 2).map(counter => new File(s"file-$counter"))
       val docs = filesToMerge.map(_ => DataGenerator.swaggerDoc())
-      (swaggerConverter.parse(_)).when(filesToMerge.head).returns(docs.head)
-      (swaggerConverter.parse(_)).when(filesToMerge.last).returns(docs.last)
+      (swaggerConverter.parse(_)).when(filesToMerge.head).returns(Success(docs.head))
+      (swaggerConverter.parse(_)).when(filesToMerge.last).returns(Success(docs.last))
 
-      val result = swaggerMerger.mergeFiles(baseFile, filesToMerge)
+      val result = mergeValidFiles(baseFile, filesToMerge)
 
       result.info.title should equal(baseSwaggerDoc.info.title)
       result.info.description should equal(baseSwaggerDoc.info.description)
@@ -57,14 +75,14 @@ class SwaggerMergerSpec extends Spec {
         "/sub1/path1" -> DataGenerator.swaggerPath(HttpMethod.Get),
         "/sub1/path2" -> DataGenerator.swaggerPath(HttpMethod.Post)
       )))
-      (swaggerConverter.parse(_)).when(file1).returns(doc1)
+      (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
 
       val doc2 = DataGenerator.swaggerDoc(paths = Option(Map(
         "/sub2/path1" -> DataGenerator.swaggerPath(HttpMethod.Get),
       )))
-      (swaggerConverter.parse(_)).when(file2).returns(doc2)
+      (swaggerConverter.parse(_)).when(file2).returns(Success(doc2))
 
-      val result = swaggerMerger.mergeFiles(baseFile, Seq(file1, file2))
+      val result = mergeValidFiles(baseFile, Seq(file1, file2))
 
       val expectedPaths = Seq("/a/base/path", "/sub1/path1", "/sub1/path2", "/sub2/path1")
       result.paths.keys should contain theSameElementsAs(expectedPaths)
@@ -97,15 +115,15 @@ class SwaggerMergerSpec extends Spec {
       val doc1 = DataGenerator.swaggerDoc(definitions = Option(Map(
         "doc1Def1" -> DataGenerator.swaggerDefinition(`type` = "string")
       )))
-      (swaggerConverter.parse(_)).when(file1).returns(doc1)
+      (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
 
       val doc2 = DataGenerator.swaggerDoc(definitions = Option(Map(
         "doc2Def1" -> DataGenerator.swaggerDefinition(`type` = "integer"),
         "doc2Def2" -> DataGenerator.swaggerDefinition(`$ref` = "another-ref")
       )))
-      (swaggerConverter.parse(_)).when(file2).returns(doc2)
+      (swaggerConverter.parse(_)).when(file2).returns(Success(doc2))
 
-      val result = swaggerMerger.mergeFiles(baseFile, Seq(file1, file2))
+      val result = mergeValidFiles(baseFile, Seq(file1, file2))
 
       val expectedDefinitions = Seq("baseDocDef", "doc1Def1", "doc2Def1", "doc2Def2")
       result.definitions.keys should contain theSameElementsAs(expectedDefinitions)
