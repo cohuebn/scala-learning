@@ -8,9 +8,11 @@ import scala.util.{Failure, Success, Try}
 
 class SwaggerMerger(swaggerConverter: SwaggerConverter) {
   def mergeFiles(baseFile: File, filesToMerge: Seq[File]): Try[SwaggerDoc] = {
-    val parseResults = (baseFile +: filesToMerge).map(file => swaggerConverter.parse(file))
-    val parseFailures = parseResults collect { case Failure(throwable) => throwable }
+    val parseResults = (baseFile +: filesToMerge)
+      .par.map(file => swaggerConverter.parse(file))
+      .seq
 
+    val parseFailures = parseResults collect { case Failure(throwable) => throwable }
     if (parseFailures.nonEmpty)
         Failure(new AggregateThrowable(parseFailures))
     else {
