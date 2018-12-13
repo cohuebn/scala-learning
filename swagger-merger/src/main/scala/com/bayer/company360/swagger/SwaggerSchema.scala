@@ -1,6 +1,6 @@
 package com.bayer.company360.swagger
 
-import io.circe.{Json, Decoder, Encoder, HCursor}
+import io.circe.Json
 
 object SwaggerSchema {
   type PathName = String
@@ -9,15 +9,22 @@ object SwaggerSchema {
   type ResponseCode = Int
   type SwaggerExamples = Map[String, Json]
 
-  case class SwaggerDoc(swagger: String,
-                        info: SwaggerInfo,
-                        host: String,
-                        schemes: List[String],
-                        basePath: String,
+  trait SwaggerBase {
+    val swagger: String
+    val info: SwaggerInfo
+    val host: String
+    val schemes: List[String]
+    val basePath: String
+    val `x-what-is-maximum-number-of-records-that-could-be-returned`: Int
+    val produces: List[String]
+  }
+
+  case class SwaggerDoc(swagger: String, info: SwaggerInfo, host: String,
+                        schemes: List[String], basePath: String,
                         `x-what-is-maximum-number-of-records-that-could-be-returned`: Int,
                         produces: List[String],
                         paths: Map[PathName, SwaggerPath],
-                        definitions: Map[DefinitionName, SwaggerDefinition])
+                        definitions: Map[DefinitionName, SwaggerDefinition]) extends SwaggerBase
 
   case class SwaggerInfo(title: String,
                          description: Option[String],
@@ -78,7 +85,4 @@ object SwaggerSchema {
   case class SwaggerResponseSchema(properties: Option[Map[PropertyName, SwaggerProperty]], `type`: Option[String], `$ref`: Option[String])
 
   case class SwaggerRef(`$ref`: Option[DefinitionName], `type`: Option[String], format: Option[String])
-//
-//  implicit val BigDecimalCodecs: Decoder[BigDecimal] = (c: HCursor) => Decoder.decodeBigDecimal.map(x => BigDecimal(x.bigDecimal.toPlainString))(c)
-//  implicit val BigDecimalEncoder: Encoder[BigDecimal] = Encoder.encodeDouble.contramap(_.doubleValue)
 }

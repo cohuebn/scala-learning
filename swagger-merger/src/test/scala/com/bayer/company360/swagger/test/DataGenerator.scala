@@ -15,7 +15,7 @@ object DataGenerator {
                  `x-what-is-maximum-number-of-records-that-could-be-returned`: Option[Int] = None,
                  produces: Option[List[String]] = None,
                  paths: Option[Map[PathName, SwaggerPath]] = None,
-                 definitions: Option[Map[DefinitionName, SwaggerDefinition]] = None) = {
+                 definitions: Option[Map[DefinitionName, SwaggerDefinition]] = None): SwaggerDoc = {
     new SwaggerDoc(
       swagger.getOrElse("2.0"),
       info.getOrElse(swaggerInfo()),
