@@ -60,6 +60,6 @@ class SwaggerMerger(swaggerConverter: SwaggerConverter) {
   }
 
   private def getDuplicates[Key, T](accumulated: Map[Key, Seq[Traceable[T]]]): Map[Key, Seq[Traceable[T]]] = {
-    accumulated filter { case (_, value) => value.length > 1 }
+    accumulated filter { case (_, value) => value.map(_.value).distinct.length > 1 }
   }
 }

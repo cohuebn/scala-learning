@@ -33,6 +33,9 @@ class SwaggerMergerSpec extends Spec {
 
     def mergeValidFiles(baseFile: File, filesToMerge: Seq[File]) = {
       val mergeResult = swaggerMerger.mergeFiles(baseFile, filesToMerge)
+      if (mergeResult.isFailure)
+        fail(s"Unexpected merge failure\n${mergeResult.failure.exception}", mergeResult.failure.exception)
+
       mergeResult.success.value
     }
   }
@@ -77,6 +80,7 @@ class SwaggerMergerSpec extends Spec {
 
       val file2 = new File("file-2")
       val doc2 = DataGenerator.swaggerDoc(paths = Option(Map(
+        "/sub1/path1" -> doc1.paths("/sub1/path1").copy(),
         "/sub2/path1" -> DataGenerator.swaggerPath(HttpMethod.Get),
       )))
       (swaggerConverter.parse(_)).when(file2).returns(Success(doc2))
@@ -103,6 +107,43 @@ class SwaggerMergerSpec extends Spec {
       assertOnOption(result.paths.get("/sub2/path1")) { path =>
         path.get should equal(doc2.paths("/sub2/path1").get)
         path.post shouldBe(empty)
+      }
+    }
+
+    "merge definitions from all swagger documents" in new Setup {
+      val file1 = new File("file-1")
+      val file2 = new File("file-2")
+
+      val doc1 = DataGenerator.swaggerDoc(definitions = Option(Map(
+        "doc1Def1" -> DataGenerator.swaggerDefinition(`type` = "string"),
+        "baseDocDef" -> DataGenerator.swaggerDefinition(`type` = "string")
+      )))
+      (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
+
+      val doc2 = DataGenerator.swaggerDoc(definitions = Option(Map(
+        "doc2Def1" -> DataGenerator.swaggerDefinition(`type` = "integer"),
+        "doc2Def2" -> DataGenerator.swaggerDefinition(`$ref` = "another-ref")
+      )))
+      (swaggerConverter.parse(_)).when(file2).returns(Success(doc2))
+
+      val result = mergeValidFiles(baseFile, Seq(file1, file2))
+
+      val expectedDefinitions = Seq("baseDocDef", "doc1Def1", "doc2Def1", "doc2Def2")
+      result.definitions.keys should contain theSameElementsAs(expectedDefinitions)
+      assertOnOption(result.definitions.get("baseDocDef")) { definition =>
+        definition.`type` should equal(Some("string"))
+      }
+
+      assertOnOption(result.definitions.get("doc1Def1")) { definition =>
+        definition.`type` should equal(Some("string"))
+      }
+
+      assertOnOption(result.definitions.get("doc2Def1")) { definition =>
+        definition.`type` should equal(Some("integer"))
+      }
+
+      assertOnOption(result.definitions.get("doc2Def2")) { definition =>
+        definition.`$ref` should equal(Some("another-ref"))
       }
     }
 
@@ -136,7 +177,7 @@ class SwaggerMergerSpec extends Spec {
     "aggregate errors for all conflicting definitions" in new Setup {
       val file1 = new File("file-1")
       val doc1 = DataGenerator.swaggerDoc(definitions = Option(Map(
-        "baseDocDef" -> DataGenerator.swaggerDefinition(`type` = "string")
+        "baseDocDef" -> DataGenerator.swaggerDefinition(`type` = "int")
       )))
       (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
 
@@ -151,42 +192,6 @@ class SwaggerMergerSpec extends Spec {
       result.failure.exception shouldBe a[AggregateThrowable]
       result.failure.exception.getMessage should include("baseDocDef")
       result.failure.exception.getMessage should not include("notTheBaseDocDef")
-    }
-
-    "merge definitions from all swagger documents" in new Setup {
-      val file1 = new File("file-1")
-      val file2 = new File("file-2")
-
-      val doc1 = DataGenerator.swaggerDoc(definitions = Option(Map(
-        "doc1Def1" -> DataGenerator.swaggerDefinition(`type` = "string")
-      )))
-      (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
-
-      val doc2 = DataGenerator.swaggerDoc(definitions = Option(Map(
-        "doc2Def1" -> DataGenerator.swaggerDefinition(`type` = "integer"),
-        "doc2Def2" -> DataGenerator.swaggerDefinition(`$ref` = "another-ref")
-      )))
-      (swaggerConverter.parse(_)).when(file2).returns(Success(doc2))
-
-      val result = mergeValidFiles(baseFile, Seq(file1, file2))
-
-      val expectedDefinitions = Seq("baseDocDef", "doc1Def1", "doc2Def1", "doc2Def2")
-      result.definitions.keys should contain theSameElementsAs(expectedDefinitions)
-      assertOnOption(result.definitions.get("baseDocDef")) { definition =>
-        definition.`type` should equal(Some("string"))
-      }
-
-      assertOnOption(result.definitions.get("doc1Def1")) { definition =>
-        definition.`type` should equal(Some("string"))
-      }
-
-      assertOnOption(result.definitions.get("doc2Def1")) { definition =>
-        definition.`type` should equal(Some("integer"))
-      }
-
-      assertOnOption(result.definitions.get("doc2Def2")) { definition =>
-        definition.`$ref` should equal(Some("another-ref"))
-      }
     }
   }
 }
