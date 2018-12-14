@@ -28,6 +28,15 @@ class SwaggerDocAccumulatorSpec extends Spec {
         "newDefinition" -> DataGenerator.swaggerDefinition()
       )
     )
+
+    val file3 = new File(faker.Internet.domain_word)
+    val swaggerDoc3 = DataGenerator.swaggerDoc(
+      paths = Map(
+        "/path1" -> swaggerDoc1.paths("/path1").copy(),
+        "/newPath2" -> DataGenerator.swaggerPath(HttpMethod.Get)
+      ),
+      definitions = Map("definition1" -> swaggerDoc1.definitions("definition1").copy())
+    )
   }
 
   trait BaseSwaggerDocAssertions extends Setup {
@@ -104,22 +113,24 @@ class SwaggerDocAccumulatorSpec extends Spec {
       behave like new BaseSwaggerDocAssertions {
         override def getExpectedSwaggerDoc: SwaggerDoc = swaggerDoc1
         override def getSwaggerBase: SwaggerBase = {
-          val accumulator1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
-          val accumulator2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
-          SwaggerDocAccumulator.mergeAccumulators(accumulator1, accumulator2)
+          val accumulated1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
+          val accumulated2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
+          val accumulated3 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file3, swaggerDoc3)
+          SwaggerDocAccumulator.mergeAccumulators(Seq(accumulated1, accumulated2, accumulated3))
         }
       }
 
       "append paths from multiple swagger documents" in new Setup {
-        val accumulator1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
-        val accumulator2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
-        val result = SwaggerDocAccumulator.mergeAccumulators(accumulator1, accumulator2)
+        val accumulated1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
+        val accumulated2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
+        val accumulated3 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file3, swaggerDoc3)
+        val result = SwaggerDocAccumulator.mergeAccumulators(Seq(accumulated1, accumulated2, accumulated3))
 
-        result.paths.keys should contain theSameElementsAs(Seq("/path1", "/path2", "/newPath"))
+        result.paths.keys should contain theSameElementsAs(Seq("/path1", "/path2", "/newPath", "/newPath2"))
         val path1 = result.paths("/path1")
-        val expectedPath1Values = Seq(swaggerDoc1.paths("/path1"), swaggerDoc2.paths("/path1"))
+        val expectedPath1Values = Seq(swaggerDoc1.paths("/path1"), swaggerDoc2.paths("/path1"), swaggerDoc3.paths("/path1"))
         path1.map(x => x.value) should contain theSameElementsAs(expectedPath1Values)
-        path1.map(x => x.file) should contain theSameElementsAs(Seq(file1, file2))
+        path1.map(x => x.file) should contain theSameElementsAs(Seq(file1, file2, file3))
 
         val path2 = result.paths("/path2")
         val expectedPath2Values = Seq(swaggerDoc1.paths("/path2"))
@@ -130,18 +141,24 @@ class SwaggerDocAccumulatorSpec extends Spec {
         val expectedNewPathValues = Seq(swaggerDoc2.paths("/newPath"))
         newPath.map(x => x.value) should contain theSameElementsAs(expectedNewPathValues)
         newPath.map(x => x.file) should contain theSameElementsAs(Seq(file2))
+
+        val newPath2 = result.paths("/newPath2")
+        val expectedNewPath2Values = Seq(swaggerDoc3.paths("/newPath2"))
+        newPath2.map(x => x.value) should contain theSameElementsAs(expectedNewPath2Values)
+        newPath2.map(x => x.file) should contain theSameElementsAs(Seq(file3))
       }
 
       "append definitions from another swagger document" in new Setup {
-        val accumulator1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
-        val accumulator2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
-        val result = SwaggerDocAccumulator.mergeAccumulators(accumulator1, accumulator2)
+        val accumulated1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
+        val accumulated2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
+        val accumulated3 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file3, swaggerDoc3)
+        val result = SwaggerDocAccumulator.mergeAccumulators(Seq(accumulated1, accumulated2, accumulated3))
 
         result.definitions.keys should contain theSameElementsAs(Seq("definition1", "newDefinition"))
         val definition1 = result.definitions("definition1")
-        val expectedDefinition1Values = Seq(swaggerDoc1.definitions("definition1"), swaggerDoc2.definitions("definition1"))
+        val expectedDefinition1Values = Seq(swaggerDoc1.definitions("definition1"), swaggerDoc2.definitions("definition1"), swaggerDoc3.definitions("definition1"))
         definition1.map(x => x.value) should contain theSameElementsAs(expectedDefinition1Values)
-        definition1.map(x => x.file) should contain theSameElementsAs(Seq(file1, file2))
+        definition1.map(x => x.file) should contain theSameElementsAs(Seq(file1, file2, file3))
 
         val newDefinition = result.definitions("newDefinition")
         val expectedNewDefinitionValues = Seq(swaggerDoc2.definitions("newDefinition"))
@@ -159,29 +176,33 @@ class SwaggerDocAccumulatorSpec extends Spec {
       behave like new BaseSwaggerDocAssertions {
         override def getExpectedSwaggerDoc: SwaggerDoc = swaggerDoc1
         override def getSwaggerBase: SwaggerBase = {
-          val accumulator1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
-          val accumulator2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
-          val accumulated = SwaggerDocAccumulator.mergeAccumulators(accumulator1, accumulator2)
+          val accumulated1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
+          val accumulated2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
+          val accumulated3 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file3, swaggerDoc3)
+          val accumulated = SwaggerDocAccumulator.mergeAccumulators(Seq(accumulated1, accumulated2, accumulated3))
           convertValidAccumulated(accumulated)
         }
       }
 
       "flatten paths" in new Setup {
-        val accumulator1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
-        val accumulator2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
-        val accumulated = SwaggerDocAccumulator.mergeAccumulators(accumulator1, accumulator2)
+        val accumulated1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
+        val accumulated2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
+        val accumulated3 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file3, swaggerDoc3)
+        val accumulated = SwaggerDocAccumulator.mergeAccumulators(Seq(accumulated1, accumulated2, accumulated3))
         val result = convertValidAccumulated(accumulated)
 
-        result.paths.keys should contain theSameElementsAs(Seq("/path1", "/path2", "/newPath"))
+        result.paths.keys should contain theSameElementsAs(Seq("/path1", "/path2", "/newPath", "/newPath2"))
         result.paths("/path1") should equal(swaggerDoc1.paths("/path1"))
         result.paths("/path2") should equal(swaggerDoc1.paths("/path2"))
         result.paths("/newPath") should equal(swaggerDoc2.paths("/newPath"))
+        result.paths("/newPath2") should equal(swaggerDoc3.paths("/newPath2"))
       }
 
       "flatten definitions" in new Setup {
-        val accumulator1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
-        val accumulator2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
-        val accumulated = SwaggerDocAccumulator.mergeAccumulators(accumulator1, accumulator2)
+        val accumulated1 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file1, swaggerDoc1)
+        val accumulated2 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file2, swaggerDoc2)
+        val accumulated3 = SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file3, swaggerDoc3)
+        val accumulated = SwaggerDocAccumulator.mergeAccumulators(Seq(accumulated1, accumulated2, accumulated3))
         val result = convertValidAccumulated(accumulated)
 
         result.definitions.keys should contain theSameElementsAs(Seq("definition1", "newDefinition"))

@@ -18,7 +18,7 @@ case class AccumulatedSwaggerDoc(swagger: String, info: SwaggerInfo, host: Strin
 
 trait SwaggerDocAccumulator {
   def createAccumulatedSwaggerDoc(file: File, swaggerDoc: SwaggerDoc): AccumulatedSwaggerDoc
-  def mergeAccumulators(doc1: AccumulatedSwaggerDoc, doc2: AccumulatedSwaggerDoc): AccumulatedSwaggerDoc
+  def mergeAccumulators(docs: Traversable[AccumulatedSwaggerDoc]): AccumulatedSwaggerDoc
   def toSwaggerDoc(accumulated: AccumulatedSwaggerDoc): Try[SwaggerDoc]
 }
 
@@ -43,11 +43,11 @@ object SwaggerDocAccumulator extends SwaggerDocAccumulator {
     )
   }
 
-  def mergeAccumulators(doc1: AccumulatedSwaggerDoc, doc2: AccumulatedSwaggerDoc): AccumulatedSwaggerDoc = {
-    doc1.copy(
+  def mergeAccumulators(docs: Traversable[AccumulatedSwaggerDoc]): AccumulatedSwaggerDoc = {
+    docs.reduce((doc1, doc2) => doc1.copy(
       paths = mergeMaps(doc1.paths, doc2.paths),
       definitions = mergeMaps(doc1.definitions, doc2.definitions)
-    )
+    ))
   }
 
   def toSwaggerDoc(accumulated: AccumulatedSwaggerDoc): Try[SwaggerDoc] = {

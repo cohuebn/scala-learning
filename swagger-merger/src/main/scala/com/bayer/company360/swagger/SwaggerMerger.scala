@@ -21,7 +21,7 @@ class SwaggerMerger(swaggerConverter: SwaggerConverter, swaggerDocAccumulator: S
           (swaggerDoc, SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file, swaggerDoc)) // TODO - remove tuple (wip until accumulator finished)
       }
       val (swaggerDocs, swaggerAccumulators) = successfulParseResults.unzip
-      val accumulatedSwaggerDocs = swaggerAccumulators.reduce(SwaggerDocAccumulator.mergeAccumulators)
+      val accumulatedSwaggerDocs = SwaggerDocAccumulator.mergeAccumulators(swaggerAccumulators)
       val mergedSwagger = mergeSwaggerDocs(swaggerDocs.head, swaggerDocs.tail)
       Success(mergedSwagger)
     }
