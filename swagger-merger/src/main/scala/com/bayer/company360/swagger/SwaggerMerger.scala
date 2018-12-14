@@ -4,41 +4,62 @@ import java.io.File
 
 import com.bayer.company360.swagger.SwaggerSchema.SwaggerDoc
 
+import scala.collection.parallel.ParSeq
 import scala.util.{Failure, Success, Try}
 
-class SwaggerMerger(swaggerConverter: SwaggerConverter, swaggerDocAccumulator: SwaggerDocAccumulator) {
+class SwaggerMerger(swaggerConverter: SwaggerConverter) {
   def mergeFiles(baseFile: File, filesToMerge: Seq[File]): Try[SwaggerDoc] = {
-    val parseResults = (baseFile +: filesToMerge)
-      .par.map(file => (file, swaggerConverter.parse(file)))
-      .seq
+    val parseResults = parseFiles(baseFile +: filesToMerge)
+    parseResults.flatMap { swaggerDocs =>
+      val accumulatedPaths = swaggerDocs.map(doc => toAccumulated(doc.file, doc.value.paths))
+        .reduceLeft(mergeAccumulated)
 
-    val parseFailures = parseResults collect { case (_, Failure(throwable)) => throwable }
-    if (parseFailures.nonEmpty)
-        Failure(new AggregateThrowable(parseFailures))
-    else {
-      val successfulParseResults = parseResults collect {
-        case (file, Success(swaggerDoc)) =>
-          (swaggerDoc, SwaggerDocAccumulator.createAccumulatedSwaggerDoc(file, swaggerDoc)) // TODO - remove tuple (wip until accumulator finished)
+      val duplicatedPathExceptions = getDuplicates(accumulatedPaths)
+        .map { case (pathName, paths) => DuplicatePathException(pathName, paths.map(_.file)) }
+
+      val accumulatedDefinitions = swaggerDocs.map(doc => toAccumulated(doc.file, doc.value.definitions))
+        .reduceLeft(mergeAccumulated)
+
+      val duplicatedDefinitionsExceptions = getDuplicates(accumulatedDefinitions)
+        .map { case (definitionName, definitions) => DuplicatePathException(definitionName, definitions.map(_.file)) }
+
+      if (duplicatedPathExceptions.nonEmpty || duplicatedDefinitionsExceptions.nonEmpty) {
+        Failure(new AggregateThrowable(duplicatedPathExceptions ++ duplicatedDefinitionsExceptions))
       }
-      val (swaggerDocs, swaggerAccumulators) = successfulParseResults.unzip
-      val accumulatedSwaggerDocs = SwaggerDocAccumulator.mergeAccumulators(swaggerAccumulators)
-      val mergedSwagger = mergeSwaggerDocs(swaggerDocs.head, swaggerDocs.tail)
-      Success(mergedSwagger)
+      else {
+        val merged = swaggerDocs.head.value.copy(
+          paths = accumulatedPaths.map { case (pathName, paths) => pathName -> paths.head.value },
+          definitions = accumulatedDefinitions.map { case (name, definition) => name -> definition.head.value }
+        )
+        Success(merged)
+      }
     }
   }
 
-  private def mergeSwaggerDocs(baseSwagger: SwaggerDoc, swaggerToMerge: Seq[SwaggerDoc]): SwaggerDoc = {
-    swaggerToMerge.fold(baseSwagger)((mergedSwagger, currentSwaggerDoc) =>
-      mergedSwagger.copy(
-        paths = mergeMaps(mergedSwagger.paths, currentSwaggerDoc.paths),
-        definitions = mergeMaps(mergedSwagger.definitions, currentSwaggerDoc.definitions)
-      )
-    )
+  private def parseFiles(files: Seq[File]): Try[ParSeq[Traceable[SwaggerDoc]]] = {
+    val parseResults = files.par.map(file => (file, swaggerConverter.parse(file)))
+    val failures = parseResults collect { case (_, Failure(throwable)) => throwable}
+    if (failures.nonEmpty)
+      Failure(new AggregateThrowable(failures.seq))
+    else {
+      val traceableSwaggerDocs = parseResults collect {
+        case (file, Success(swaggerDoc)) => Traceable(file, swaggerDoc)
+      }
+      Success(traceableSwaggerDocs)
+    }
   }
 
-  private def mergeMaps[T, V](map1: Map[T, V], map2: Map[T, V]) = {
-    map2.foldLeft(map1) { case (aggregateMap: Map[T, V], (key, value)) =>
-      aggregateMap.updated(key, value)
+  private def toAccumulated[Key, Value](file: File, items: Map[Key, Value]): Map[Key, Seq[Traceable[Value]]] = {
+    items map { case (key, value) => key -> Seq(Traceable(file, value)) }
+  }
+
+  private def mergeAccumulated[Key, Value](accumulated1: Map[Key, Seq[Value]], accumulated2: Map[Key, Seq[Value]]): Map[Key, Seq[Value]] = {
+    accumulated2.foldLeft(accumulated1) {
+      case (allAccumulated, (key, value)) => allAccumulated.updated(key, allAccumulated.getOrElse(key, Seq()) ++ value)
     }
+  }
+
+  private def getDuplicates[Key, T](accumulated: Map[Key, Seq[Traceable[T]]]): Map[Key, Seq[Traceable[T]]] = {
+    accumulated filter { case (_, value) => value.length > 1 }
   }
 }

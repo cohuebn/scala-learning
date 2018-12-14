@@ -9,3 +9,5 @@ class FileException(file: File, innerThrowable: Throwable) extends Exception {
 
   override def getCause: Throwable = innerThrowable
 }
+
+

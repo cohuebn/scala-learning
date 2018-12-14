@@ -12,8 +12,7 @@ import scala.util.{Failure, Success}
 class SwaggerMergerSpec extends Spec {
   trait Setup {
     val swaggerConverter = stub[SwaggerConverter]
-    val swaggerDocAccumulator = stub[SwaggerDocAccumulator]
-    val swaggerMerger = new SwaggerMerger(swaggerConverter, swaggerDocAccumulator)
+    val swaggerMerger = new SwaggerMerger(swaggerConverter)
 
     val baseFile = new File("the-base")
     val baseSwaggerDoc = DataGenerator.swaggerDoc(
@@ -31,10 +30,6 @@ class SwaggerMergerSpec extends Spec {
     )
 
     (swaggerConverter.parse(_)).when(baseFile).returns(Success(baseSwaggerDoc))
-
-    val baseAccumulated = stub[AccumulatedSwaggerDoc]
-    (swaggerDocAccumulator.createAccumulatedSwaggerDoc(_, _)).when(baseFile, baseSwaggerDoc)
-      .returns(baseAccumulated)
 
     def mergeValidFiles(baseFile: File, filesToMerge: Seq[File]) = {
       val mergeResult = swaggerMerger.mergeFiles(baseFile, filesToMerge)
@@ -54,11 +49,7 @@ class SwaggerMergerSpec extends Spec {
       result.failure.exception shouldBe a[AggregateThrowable]
     }
 
-    "return accumulated swagger doc on success" in new Setup {
-
-    }
-
-    "use base file for top-level information" in new Setup {
+      "use base file for top-level information" in new Setup {
       val filesToMerge = (1 to 2).map(counter => new File(s"file-$counter"))
       val docs = filesToMerge.map(_ => DataGenerator.swaggerDoc())
       (swaggerConverter.parse(_)).when(filesToMerge.head).returns(Success(docs.head))
@@ -78,14 +69,13 @@ class SwaggerMergerSpec extends Spec {
 
     "merge paths from all swagger documents" in new Setup {
       val file1 = new File("file-1")
-      val file2 = new File("file-2")
-
       val doc1 = DataGenerator.swaggerDoc(paths = Option(Map(
         "/sub1/path1" -> DataGenerator.swaggerPath(HttpMethod.Get),
         "/sub1/path2" -> DataGenerator.swaggerPath(HttpMethod.Post)
       )))
       (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
 
+      val file2 = new File("file-2")
       val doc2 = DataGenerator.swaggerDoc(paths = Option(Map(
         "/sub2/path1" -> DataGenerator.swaggerPath(HttpMethod.Get),
       )))
@@ -96,46 +86,71 @@ class SwaggerMergerSpec extends Spec {
       val expectedPaths = Seq("/a/base/path", "/sub1/path1", "/sub1/path2", "/sub2/path1")
       result.paths.keys should contain theSameElementsAs(expectedPaths)
       assertOnOption(result.paths.get("/a/base/path")) { path =>
-        path.get should not be empty
-        path.get.get.summary should equal(Some("from the base"))
+        path.get should equal(baseSwaggerDoc.paths("/a/base/path").get)
         path.post shouldBe(empty)
       }
 
       assertOnOption(result.paths.get("/sub1/path1")) { path =>
-        path.get should not be empty
+        path.get should equal(doc1.paths("/sub1/path1").get)
         path.post shouldBe(empty)
       }
 
       assertOnOption(result.paths.get("/sub1/path2")) { path =>
         path.get shouldBe(empty)
-        path.post should not be empty
+        path.post should equal(doc1.paths("/sub1/path2").post)
       }
 
       assertOnOption(result.paths.get("/sub2/path1")) { path =>
-        path.get should not be empty
+        path.get should equal(doc2.paths("/sub2/path1").get)
         path.post shouldBe(empty)
       }
     }
 
     "aggregate errors for all conflicting paths" in new Setup {
       val file1 = new File("file-1")
-      val file2 = new File("file-2")
-
       val doc1 = DataGenerator.swaggerDoc(paths = Option(Map(
         "/sub1/path1" -> DataGenerator.swaggerPath(HttpMethod.Get),
-        "/sub1/path2" -> DataGenerator.swaggerPath(HttpMethod.Post)
+        "/sub1/path2" -> DataGenerator.swaggerPath(HttpMethod.Post),
+        "/sub1/path3" -> DataGenerator.swaggerPath(HttpMethod.Post)
       )))
       (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
 
-      val doc2 = DataGenerator.swaggerDoc(paths = doc1.paths
-        .updated("sub1/path1", DataGenerator.swaggerPath(HttpMethod.Get, summary = "I don't match doc1"))
-        .updated("sub2/path1", DataGenerator.swaggerPath(HttpMethod.Get))
-      )
+      val file2 = new File("file-2")
+      val doc2 = DataGenerator.swaggerDoc(paths = Option(Map(
+        "/sub1/path1" -> DataGenerator.swaggerPath(HttpMethod.Get, summary = "I don't match doc1"),
+        "/sub1/path3" -> DataGenerator.swaggerPath(HttpMethod.Get, summary = "I don't match doc1"),
+        "/sub2/path1" -> DataGenerator.swaggerPath(HttpMethod.Get)
+      )))
       (swaggerConverter.parse(_)).when(file2).returns(Success(doc2))
 
       val result = swaggerMerger.mergeFiles(baseFile, Seq(file1, file2))
 
       result.failure.exception shouldBe a[AggregateThrowable]
+      val message = result.failure.exception.getMessage
+      message should include("/sub1/path1")
+      message should include("/sub1/path3")
+      message should not include("/sub1/path2")
+      message should not include("/sub2/path1")
+    }
+
+    "aggregate errors for all conflicting definitions" in new Setup {
+      val file1 = new File("file-1")
+      val doc1 = DataGenerator.swaggerDoc(definitions = Option(Map(
+        "baseDocDef" -> DataGenerator.swaggerDefinition(`type` = "string")
+      )))
+      (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
+
+      val file2 = new File("file-2")
+      val doc2 = DataGenerator.swaggerDoc(definitions = Option(Map(
+        "notTheBaseDocDef" -> DataGenerator.swaggerDefinition(`type` = "string")
+      )))
+      (swaggerConverter.parse(_)).when(file2).returns(Success(doc2))
+
+      val result = swaggerMerger.mergeFiles(baseFile, Seq(file1, file2))
+
+      result.failure.exception shouldBe a[AggregateThrowable]
+      result.failure.exception.getMessage should include("baseDocDef")
+      result.failure.exception.getMessage should not include("notTheBaseDocDef")
     }
 
     "merge definitions from all swagger documents" in new Setup {
