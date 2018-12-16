@@ -59,10 +59,12 @@ object DataGenerator {
   }
 
   def swaggerDefinition(`type`: Option[String] = None,
+                        format: Option[String] = None,
                         properties: Option[Map[PropertyName, SwaggerProperty]] = None,
                        `$ref`: Option[String] = None): SwaggerDefinition = {
     new SwaggerDefinition(
       `type`,
+      format,
       None, // 'required' appears to be unused
       properties,
       `$ref`

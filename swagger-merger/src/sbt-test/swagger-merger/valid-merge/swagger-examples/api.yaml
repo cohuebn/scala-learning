@@ -1,21 +1,20 @@
 swagger: '2.0'
 info:
-  title: The API (from base)
-  description: API description (from base)
-  version: v1.0.0
+  title: DOA Approver
+  description: API returns the Market Funding Delegation of Authority Approval Amount for a UserId and DOA Subtype Code
+  version: v1
 # CHANGE LOG
 # 07-05-2018: Initial version
 # 10-31-2018: Made DOA Approver User Id optional on the input parameters
 # 11-05-2018: Changed input parameter doaSubTypeCode to array type
-host: thehost.com
+host: api-t.monsanto.com
 # array of all schemes that your API supports
 schemes:
 - https
 # will be prefixed to all paths
-basePath: /base-path/v1
+basePath: /market-funding/v1
 x-what-is-maximum-number-of-records-that-could-be-returned: 1
 produces:
 - application/json
-- application/xml
 paths: {}
 definitions: {}

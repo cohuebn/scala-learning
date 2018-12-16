@@ -42,6 +42,7 @@ object SwaggerSchema {
   }
 
   case class SwaggerDefinition(`type`: Option[String],
+                               format: Option[String],
                                required: Option[List[String]],
                                properties: Option[Map[PropertyName, SwaggerProperty]],
                                `$ref`: Option[String])
@@ -53,32 +54,21 @@ object SwaggerSchema {
                               parameters: List[SwaggerParameter],
                               responses: Map[ResponseCode, SwaggerResponse])
 
-  case class SwaggerProperty(`type`: Option[String],
-                             description: Option[String],
+  case class SwaggerProperty(description: Option[String],
+                             `type`: Option[String],
                              format: Option[String],
                              items: Option[SwaggerRef],
                              `$ref`: Option[DefinitionName])
 
-  case class SwaggerParameter(name: String, // "globalFiscalYear", "limit", "offset", "rowUpdateTimestamp", etc
+  case class SwaggerParameter(name: String, in: String,
                               description: Option[String],
-                              in: String, // GETs have many parameters, each having "in:query".  POSTs have one parameter, with "in: body" and a body definition
                               required: Option[Boolean],
-
-                              // only if in != "body"
-                              format: Option[String], // "ISO 4217", "YYYY-MM-DD", ...     or None if format is simply a basic string or number
-                              `type`: Option[String], // "string", "integer", "number", etc
-
-                              // only if in == "array"
+                              `type`: Option[String],
+                              format: Option[String],
                               items: Option[SwaggerRef] = None,
-
-                              // only if in == "body"
                               schema: Option[SwaggerResponseSchema] = None,
-
-                              // can be: csv, ssv, tsv, pipes, multi (e.g., p=7&p=9)
-                              //This apparently isn't used right now by those who create Swagger YAML, but it could be used to specify that multiple values can be passed for a parameter in (e.g. customerNumber=1&customerNumber=2). probably only applies to gets
                               collectionFormat: Option[String] = None,
-                              `x-example`: Option[String] = None
-                             )
+                              `x-example`: Option[String] = None)
 
   case class SwaggerResponse(description: Option[String], schema: SwaggerResponseSchema, examples: Option[SwaggerExamples])
 
