@@ -29,11 +29,16 @@ object DataGenerator {
     )
   }
 
-  def swaggerInfo(title: Option[String] = None, description: Option[String] = None, version: Option[String] = None) = {
+  def swaggerInfo(title: Option[String] = None, description: Option[String] = None, version: Option[String] = None,
+                  termsOfService: Option[String] = None, contact: Option[SwaggerContact] = None,
+                  license: Option[SwaggerLicense] = None) = {
     new SwaggerInfo(
       title.getOrElse(Lorem.sentence()),
       description,
-      version.getOrElse("0.0.1-dontcare")
+      version.getOrElse("0.0.1-dontcare"),
+      termsOfService,
+      contact,
+      license
     )
   }
 
@@ -43,14 +48,22 @@ object DataGenerator {
                   operationId: Option[String] = None,
                   tags: Option[List[String]] = None,
                   parameters: Option[List[SwaggerParameter]] = None,
-                  responses: Option[Map[ResponseCode, SwaggerResponse]] = None): SwaggerPath = {
+                  responses: Option[Map[ResponseCode, SwaggerResponse]] = None,
+                  consumes: Option[Array[String]] = None,
+                  produces: Option[Array[String]] = None,
+                  schemes: Option[Array[String]] = None,
+                  deprecated: Option[Boolean] = None): SwaggerPath = {
     val operation: SwaggerOperation = new SwaggerOperation(
       summary,
       description,
       operationId,
       tags,
       parameters.getOrElse(List()),
-      responses.getOrElse(Map())
+      responses.getOrElse(Map()),
+      consumes,
+      produces,
+      schemes,
+      deprecated
     )
     method match {
       case HttpMethod.Get => new SwaggerPath(Option(operation), None)

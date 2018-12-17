@@ -16,7 +16,7 @@ class SwaggerMergerSpec extends Spec {
 
     val baseFile = new File("the-base")
     val baseSwaggerDoc = DataGenerator.swaggerDoc(
-      info = new SwaggerInfo(Lorem.sentence(), None, "0.0.1-fake"),
+      info = DataGenerator.swaggerInfo(title = Lorem.sentence(), version = "0.0.1-fake"),
       host = "theexpectedhost.com",
       schemes = List(Lorem.sentence(1), Lorem.sentence(1)),
       basePath = "the-expected-base-path",

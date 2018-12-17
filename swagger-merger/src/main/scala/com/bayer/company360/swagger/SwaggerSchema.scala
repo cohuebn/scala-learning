@@ -28,7 +28,14 @@ object SwaggerSchema {
 
   case class SwaggerInfo(title: String,
                          description: Option[String],
-                         version: String)
+                         version: String,
+                         termsOfService: Option[String],
+                         contact: Option[SwaggerContact],
+                         license: Option[SwaggerLicense])
+
+  case class SwaggerContact(name: Option[String], url: Option[String], email: Option[String])
+
+  case class SwaggerLicense(name: Option[String], url: Option[String])
 
   case class SwaggerPath(get: Option[SwaggerOperation],
                          post: Option[SwaggerOperation]) {
@@ -52,7 +59,11 @@ object SwaggerSchema {
                               operationId: Option[String],
                               tags: Option[List[String]],
                               parameters: List[SwaggerParameter],
-                              responses: Map[ResponseCode, SwaggerResponse])
+                              responses: Map[ResponseCode, SwaggerResponse],
+                              consumes: Option[Array[String]],
+                              produces: Option[Array[String]],
+                              schemes: Option[Array[String]],
+                              deprecated: Option[Boolean])
 
   case class SwaggerProperty(description: Option[String],
                              `type`: Option[String],
@@ -68,13 +79,14 @@ object SwaggerSchema {
                               items: Option[SwaggerRef] = None,
                               schema: Option[SwaggerResponseSchema] = None,
                               collectionFormat: Option[String] = None,
-                              `x-example`: Option[String] = None)
+                              `x-example`: Option[String] = None,
+                              allowEmptyValue: Option[Boolean])
 
   case class SwaggerResponse(description: Option[String], schema: SwaggerResponseSchema, examples: Option[SwaggerExamples])
 
-  case class SwaggerResponseSchema(`type`: Option[String], properties: Option[Map[PropertyName, SwaggerProperty]], `$ref`: Option[String], items: Option[SwaggerResponseItems])
+  case class SwaggerResponseSchema(`type`: Option[String], format: Option[String], properties: Option[Map[PropertyName, SwaggerProperty]], `$ref`: Option[String], items: Option[SwaggerResponseItems])
 
-  case class SwaggerResponseItems(`$ref`: Option[DefinitionName])
+  case class SwaggerResponseItems(`type`: Option[String], format: Option[String], `$ref`: Option[DefinitionName])
 
   case class SwaggerRef(`$ref`: Option[DefinitionName], `type`: Option[String], format: Option[String])
 }
