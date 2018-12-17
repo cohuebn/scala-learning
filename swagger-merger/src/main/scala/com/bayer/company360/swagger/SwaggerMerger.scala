@@ -21,7 +21,9 @@ class SwaggerMerger(swaggerConverter: SwaggerConverter) {
         .reduceLeft(mergeAccumulated)
 
       val duplicatedDefinitionsExceptions = getDuplicates(accumulatedDefinitions)
-        .map { case (definitionName, definitions) => DuplicatePathException(definitionName, definitions.map(_.file)) }
+        .map { case (definitionName, definitions) =>
+          DuplicateDefinitionException(definitionName, definitions.map(_.file))
+        }
 
       if (duplicatedPathExceptions.nonEmpty || duplicatedDefinitionsExceptions.nonEmpty) {
         Failure(new AggregateThrowable(duplicatedPathExceptions ++ duplicatedDefinitionsExceptions))

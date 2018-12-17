@@ -1,0 +1,502 @@
+# DOA Approver
+swagger: '2.0'
+info:
+  title: Program Detail
+  description: Program detail endpoint copied from non-prod Swagger
+  version: v1
+# CHANGE LOG
+# 07-05-2018: Initial version
+host: api-t.monsanto.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /market-funding/v1
+x-what-is-maximum-number-of-records-that-could-be-returned: 1
+produces:
+  - application/json
+paths:
+  /program-detail:
+    get:
+      summary: Global Market Funding Program Info
+      description: Global Market Funding Program Info
+      operationId: programDetail
+      tags:
+        - Program Detail
+      parameters:
+        - name: country
+          in: query
+          description: country where the program is being run e.g. us, canada, mexico.
+          required: true
+          type: string
+        - name: status
+          in: query
+          description: valid values include draft, predraft, pending approval, and approved.
+          required: false
+          type: string
+        - name: year
+          in: query
+          description: program year, e.g. 2016, 2017, etc.
+          required: false
+          type: string
+        - name: limit
+          in: query
+          description: max number of records to return
+          required: true
+          type: number
+        - name: offset
+          in: query
+          description: number of records to skip
+          required: false
+          type: number
+      responses:
+        200:
+          description: An array of programs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/programInformation'
+          examples:
+            application/json:
+              - _id: "84a56347e82fad0ee742aeee7f01fed0"
+                _rev: "1076-72dc811ecea4f00e04e36ca58975b5c8"
+                id: "AATST34566435y"
+                pname: "AA Test 4A"
+                year: "2017"
+                startDate: "2016-10-26"
+                endDate: "2016-11-16"
+                scopes:
+                  - hub: "South America"
+                    country: "Brazil"
+                    bisunit: "Seeds"
+                    product: "Soybean"
+                    brand: "Agroeste"
+                  - hub: "Asia / Africa"
+                    country: "Kenya"
+                    bisunit: "Seeds"
+                    product: "Corn"
+                    brand: "DEKALB"
+                  - hub: "Europe / Middle East"
+                    country: "Belgium"
+                    bisunit: "Seeds & Traits"
+                    product: "Corn"
+                    brand: "DEKALB"
+                  - hub: "North America"
+                    country: "US"
+                    bisunit: "Regional Brands"
+                    product: null
+                    brand: null
+                criteriaDefinition: "Non-Discretionary"
+                currency: "USD - Dollar"
+                payee: "Retail/Dealer"
+                marketingOwners:
+                  - name:
+                      id: "MGENO"
+                      longName: "Michael Genovese"
+                    done:
+                financeOwners:
+                  - name:
+                      id: "AATTI1"
+                      longName: "Amy Attias"
+                    done:
+                operationsOwners:
+                  - name:
+                      id: "JMSULL"
+                      longName: "John Sullivan"
+                    done:
+                paymentStartDate: "2016-12-14"
+                keyAssumptions: "test"
+                deductClaims: "Yes"
+                payTax: "No"
+                accrual: "Other - test"
+                components:
+                  - cname: "Component A"
+                    paymentMechanism: "Rebate"
+                    fillDataNeed: "rrttttt"
+                    fillDataSource: "SAP"
+                    minVolume: "5000"
+                    eligibility: "new customers only"
+                    pnls:
+                      - id: null
+                        accrualYear: "2017"
+                        expectedDisc: "$250,000"
+                      - id: null
+                        accrualYear: "2018"
+                        expectedDisc: "$250,000"
+                    calcsIf: "If customer buys 5000 bags of Dekalb corn"
+                    calcsThen: "3% per bad discount"
+                    programType: "Purchase Behavior Incentive"
+                    dealerTargetPercent: "0"
+                    growerTargetPercent: "100"
+                    ladderType: "By Volume"
+                    ladderUnits: null
+                    ladderRates:
+                      - min: "1"
+                        max: "2"
+                        rate: "1"
+                    fulfillmentProcess: null
+                    geographyEligibility: null
+                    productEligibility: null
+                  - cname: "Soybean"
+                    paymentMechanism: "Rebate"
+                    fillDataNeed: "yyyyy"
+                    fillDataSource: "yyy"
+                    minVolume: "yyy"
+                    calcsIf: "If purchase 500 bags"
+                    calcsThen: "Then receive 3% discount per bag"
+                    eligibility: "yyy"
+                    pnls:
+                      - id: null
+                        accrualYear: "2017"
+                        expectedDisc: "$250,000"
+                    programType: "Purchase Behavior Incentive"
+                    dealerTargetPercent: "100"
+                    growerTargetPercent: "0"
+                    ladderType: "None"
+                    fulfillmentProcess: null
+                    geographyEligibility: null
+                    productEligibility: null
+                  - cname: "Crop Protection"
+                    paymentMechanism: "Rebate"
+                    fillDataNeed: "yyyyy"
+                    fillDataSource: "yyyy"
+                    minVolume: "yyy"
+                    calcsIf: "if buy 50 bags"
+                    calcsThen: "free hat"
+                    eligibility: "yyy"
+                    pnls:
+                      - id: null
+                        expectedDisc: "$250,000"
+                        accrualYear: "2018"
+                    programType: "Purchase Behavior Incentive"
+                    dealerTargetPercent: "50"
+                    growerTargetPercent: "50"
+                    ladderType: "None"
+                    fulfillmentProcess: null
+                    geographyEligibility: null
+                    productEligibility: null
+                currentStatus: "draft"
+                EmailSent: "false"
+                EmailFailed: "false"
+                submitting: "false"
+                season: "Long Rains"
+                marketFundingCategory: "Grower Incentives (RLI 32203)"
+                multiYearEarningsCriteria: "Yes"
+                newOrChangedProgram: "Yes"
+                programWithPrepaymentTerms: "Yes"
+                annualPrepayments: "$23,000"
+                prepaymentTiming: "test"
+                basisForPrepayments: "test"
+                accountingMethodologyPrepayments: "test"
+                budgetGreaterThanFiveMil: "Yes"
+                liabilityClassification: "Accrued sales commissions, marketing, and advertising programs (RLI 21313)"
+                rightOfSetOffParty: "Yes"
+                rightOfSetOffOwed: "Yes"
+                rightOfSetOffIntend: "Yes"
+                rightOfSetOffLaw: "Yes"
+        400:
+          description: Incorrect syntax in query
+          schema:
+            $ref: '#/definitions/dartError'
+        404:
+          description: Missing or invalid query parameter(s)
+          schema:
+            $ref: '#/definitions/dartError'
+        504:
+          description: Database not available or unreachable
+          schema:
+            $ref: '#/definitions/dartError'
+
+definitions:
+  programInformation:
+    type: object
+    properties:
+      _id:
+        type: string
+        description: Database Internal Id
+      _rev:
+        type: string
+        description: Database Individual revision
+      id:
+        type: string
+        description: Program ID
+      pname:
+        type: string
+        description: Program Name
+      year:
+        type: string
+        description: Program  Year '['2016','2017','2018', '2019']'
+      startDate:
+        type: string
+        description: Program Start Date
+      endDate:
+        type: string
+        description: Program End Date
+      season:
+        type: string
+        description: Program Season
+      criteriaDefinition:
+        type: string
+        description: Criterial Definition '['Non-Discretionary','Discretionary']'
+      currency:
+        type: string
+        description: Currencies ['USD - Dollar','AOA - Kwanza','CAD - Canadian Dollar','COP - Peso','CRC - Colon','CZK - Czech Koruna','ECS - Sucre','ETB - Birr','EUR - Euro','GBP - British Pound','GHS - Cedi','GTQ - Quetzal','HNL - Lempira','KES - Shilling','MUR - Rupee','MWK - Kwacha','MXN - Peso','NGN - Naira','NIO - Cordoba','PEN - Sol','PLN - Zloty','RON - Leu','SVC - Colon','TZS - Shilling','UGX - Shilling','VEF - Bolivar Fuerte','VND - Dong','XAF - Franc BEAC','ZAR - Rand','ZMK - Kwacha']
+      payee:
+        type: string
+        description: Payee '['Farmer','Retail/Dealer','Agent', 'Wholesale', 'Licensee']'
+      paymentStartDate:
+        type: string
+        description: Payment Start Date
+      keyAssumptions:
+        type: string
+        description: Assumptions
+      deductClaims:
+        type: string
+        description: Deduct Claims '['YES','NO']'
+      payTax:
+        type: string
+        description: Pay Tax '['YES','NO']'
+      accrual:
+        type: string
+        description: Accrual '['Per-unit cost multiplied by units recorded to revenue (net of estimated returns)', 'Percent of sales multiplied by recorded sales revenue (net of estimated returns)','Discount applied at time of invoicing; no accrual required','Other']'
+      budgetGreaterThanFiveMil:
+        type: string
+        description: Budget Greater than five mil '['YES','NO']'
+      marketFundingCategory:
+        type: string
+        description: Market Funding Category ['Distribution Compensation (RLI 32202)','Grower Incentives (RLI 32203)','Payment Incentives (RLI 32204)','Key Account/Strategic Agreements (RLI 32205)','Licensee/Multiplier Programs (RLI 32206)','Guarantee/Performance Claims (RLI 32209)','Discretionary Programs (RLI 32210)']
+      liabilityClassification:
+        type: string
+        description: Liability Classification ['Accrued sales commissions, marketing, and advertising programs (RLI 21313)','Accrued market funding (RLI 21315)','Contra AR (if right of setoff exists, RLI 11411)']
+      rightOfSetOffParty:
+        type: string
+        description: Yes/No/Empty
+      rightOfSetOffOwed:
+        type: string
+        description: Yes/No/Empty
+      rightOfSetOffIntend:
+        type: string
+        description: Yes/No/Empty
+      rightOfSetOffLaw:
+        type: string
+        description: Yes/No/Empty
+      currentStatus:
+        type: string
+        description: Current Status '['predraft', 'draft', 'Pending Approval', 'approved']'
+      multiYearEarningsCriteria:
+        type: string
+        description: Multi Year Earnings Criteria '['YES','NO']'
+      newOrChangedProgram:
+        type: string
+        description: New or Changed Program '['YES','NO']'
+      programWithPrepaymentTerms:
+        type: string
+        description: Program With Prepayment Terms '['YES','NO']'
+      annualPrepayments:
+        type: string
+        description: currency
+      prepaymentTiming:
+        type: string
+        description: Yes/No/Empty
+      basisForPrepayments:
+        type: string
+        description: Note
+      accountingMethodologyPrepayments:
+        type: string
+        description: Note
+      marketingOwners:
+        type: array
+        description: List of Marketing Owners
+        items:
+          type: object
+          description: List of Marketing Owners
+          properties:
+            name:
+              type: object
+              description: name values
+              properties:
+                id:
+                  type: string
+                  description: user id
+                longName:
+                  type: string
+                  description: Full Name
+            done:
+              type: string
+              description: Has the owner completed the form? (Yes/No/Empty)
+      financeOwners:
+        type: array
+        description: List of Finance Owners
+        items:
+          type: object
+          description: List of Finance Owners
+          properties:
+            name:
+              type: object
+              description: name values
+              properties:
+                id:
+                  type: string
+                  description: user id
+                longName:
+                  type: string
+                  description: Full Name
+            done:
+              type: string
+              description: Has the owner completed the form? (Yes/No/Empty)
+      operationsOwners:
+        type: array
+        description: List of Operation Owners
+        items:
+          type: object
+          description: List of Finance Owners
+          properties:
+            name:
+              type: object
+              description: name values
+              properties:
+                id:
+                  type: string
+                  description: user id
+                longName:
+                  type: string
+                  description: Full Name
+            done:
+              type: string
+              description: Has the owner completed the form? (Yes/No/Empty)
+      scopes:
+        type: array
+        description: list of scopes
+        items:
+          type: object
+          description: individual scope object
+          properties:
+            hub:
+              type: string
+              description: North America, etc.
+            country:
+              type: string
+              description: US, etc.
+            bisunit:
+              type: string
+              description: Business Unit, e.g. Crop Protection
+            product:
+              type: string
+              description: Product, e.g. Corn
+            brand:
+              type: string
+              description: Brand, e,g. Warrant
+      components:
+        type: array
+        description: Components
+        items:
+          type: object
+          description: individual component object
+          properties:
+            cname:
+              type: string
+              description: Component name
+            programType:
+              type: string
+              description: Program type ['Long Term Agreement','Trade Incentive','Volume Incentive', 'Purchase Behavior Incentive',          'Activity Incentive', 'Payment Incentive', 'Guarantee/Claim']
+            paymentMechanism:
+              type: string
+              description: Payment Mechanism
+            fillDataNeed:
+              type: string
+              description: Data Needs
+            fillDataSource:
+              type: string
+              description: Data Source
+            fullfillmentProcess:
+              type: string
+              description: Fullfilment Process
+            minVolume:
+              type: string
+              description: Minimum Volume
+            calcsIf:
+              type: string
+              description: Not sure
+            calcsThen:
+              type: string
+              description: Not sure
+            ladderType:
+              type: string
+              description: Ladder Type ['None','By Volume','By Dates']
+            ladderUnits:
+              type: string
+              description: Ladder Units ['$','%']
+            elegibility:
+              type: string
+              description: Elegibility
+            geographyElegibility:
+              type: string
+              description: Not sure
+            productElegibility:
+              type: string
+              description: Not sure
+            dealerTargetPercent:
+              type: string
+              description: Dealer's percent
+            growerTargetPercent:
+              type: string
+              description: Grower's percent
+            ladderRates:
+              type: array
+              description: Could hold volume or dates
+              items:
+                type: object
+                description: individual ladder rate object
+                properties:
+                  min:
+                    type: string
+                    description: minimum volume
+                  max:
+                    type: string
+                    description: maximum volume
+                  rate:
+                    type: string
+                    description: rate ['$','%']
+                  start:
+                    type: string
+                    description: start date
+                  end:
+                    type: string
+                    description: end date
+                  value:
+                    type: string
+                    description: value in %
+            pnls:
+              type: array
+              description: Panels
+              items:
+                type: object
+                description: individual panel object
+                properties:
+                  id:
+                    type: string
+                    description: Panel Id
+                  accrualYear:
+                    type: string
+                    description: Accrual Year
+                  expectedDisc:
+                    type: string
+                    description: Expected Discount
+  dartError:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+
+  error:
+    type: object
+    properties:
+      status:
+        type: string
+      code:
+        type: integer
+        format: int32
+      errorMessage:
+        type: string

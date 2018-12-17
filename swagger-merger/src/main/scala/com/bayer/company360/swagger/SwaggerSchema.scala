@@ -72,7 +72,9 @@ object SwaggerSchema {
 
   case class SwaggerResponse(description: Option[String], schema: SwaggerResponseSchema, examples: Option[SwaggerExamples])
 
-  case class SwaggerResponseSchema(properties: Option[Map[PropertyName, SwaggerProperty]], `type`: Option[String], `$ref`: Option[String])
+  case class SwaggerResponseSchema(`type`: Option[String], properties: Option[Map[PropertyName, SwaggerProperty]], `$ref`: Option[String], items: Option[SwaggerResponseItems])
+
+  case class SwaggerResponseItems(`$ref`: Option[DefinitionName])
 
   case class SwaggerRef(`$ref`: Option[DefinitionName], `type`: Option[String], format: Option[String])
 }

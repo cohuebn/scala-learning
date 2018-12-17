@@ -1,0 +1,225 @@
+# Market Funding 
+swagger: '2.0'
+info: 
+  title: Market Funding Offer Payment Updates
+  description: API returns Market Funding offer and payment information. 
+  version: v1.0.0 
+# CHANGE LOG 
+# Susan King: 2018-05-02 : Initial creation. 
+# the domain of the service 
+host: api-t.monsanto.com 
+# array of all schemes that your API supports 
+schemes: 
+  - https 
+# will be prefixed to all paths 
+basePath: /market-funding/v1
+x-what-is-maximum-number-of-records-that-could-be-returned: 100000
+produces:
+  - application/json
+paths:
+  /offer-payment-updates:
+    get:
+      summary: Market Funding payment updates for a given Market Funding offer source.
+      description: All market funding payment request and activity updates.
+      operationId: glblMktFundOfferPmtUpdates
+      tags:
+        - Payments
+          Offers
+      parameters:
+        - name: lastUpdateTimestamp
+          in: query
+          description: The timestamp of the beginning point in time for which to pull payment updates. Format YYYY-MM-DD hh:mm:ss+hh:mm
+          required: true
+          type: string
+          format: alpha_24
+        - name: offerSourceSystemCode
+          in: query
+          description: The code for the source system originating the Market Funding offer of payment.
+          required: true
+          type: string
+          format: alpha_60
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/marketFundingOffer'
+              limit:
+                type: integer
+              offset:
+                type: integer
+        400:
+          description: Missing or invalid query parameter(s)
+          schema:
+            $ref: '#/definitions/error'
+        429:
+          description: Downstream connection limit exceeded
+          schema:
+            $ref: '#/definitions/error'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/error'
+definitions:
+  marketFundingPaymentRequest:
+    type: object
+    properties:
+      paymentRequestId:
+        type: string
+        description: Unique identifier for a payment request
+      batchCode:
+        type: string
+        description: Batch under which the offer was submitted for payment
+      paymentRequestTypeDescription:
+        type: string
+        description: A description of the payment request type.
+      paymentRequestAmount:
+        type: string
+        description: Amount of payment requested.
+      paymentRequestCurrencyCode:
+        type: string
+        description: Currency code.
+      paymentRequestDescription:
+        type: string
+        description: Description entered for the payment request.
+      paymentRequestReferenceText1:
+        type: string
+        description: Additional text or description entered for the payment request.
+      paymentRequestReferenceText2:
+        type: string
+        description: Additional text or description entered for the payment request.
+      paymentRequestReferenceText3:
+        type: string
+        description: Additional text or description entered for the payment request.
+      paymentRequestStatusCode:
+        type: integer
+        format: int32
+        description: Integer corresponding to the status of a request.  Possible values 1-5.
+      paymentRequestStatusDescription:
+        type: string
+        description: 'Description of the payment request status.  Possible values: Payment Pending, Payment Issued, Payment Voided, Payment Canceled, Payment Reversed.'
+      accountingDocumentNumber:
+        type: string
+        description: Accounting document number.
+      payeeCustomerNumber:
+        type: string
+        description: SAP Customer number of the payee
+      globalFiscalYear:
+        type: integer
+        format: int32
+        description: The global fiscal year for the Accounting Documentation.
+      companyCode:
+        type: string
+        description: The four character company code associated with the accounting document
+      paymentMethodCode:
+        type: string
+        description: The single character code used to identify the payment method or medium.
+      paymentMethodCategoryDescription:
+        type: string
+        description: The general category to which the payment method applies.  CHECK, EFT or ON_ACCOUNT.
+      billingDocumentNumber:
+        type: string
+        description: The billing document number.
+      clearingDocumentNumber:
+        type: string
+        description: Identifier for a clearing document.
+      paymentAmount:
+        type: number
+        description: The actual amount of payment.
+      paymentCurrency:
+        type: string
+        description: Currency code for the payment amount.
+      postingDate:
+        type: string
+        description: The posting date for the accounting document.
+      paidDate:
+        type: string
+        description: The paid date for the accounting document.
+      clearingDate:
+        type: string
+        description: The date on which the accounting document cleared.
+      clearIndicator:
+        type: boolean
+        description: Indicates if the accounting document has cleared.
+      checkNumber:
+        type: number
+        description: The number on the check in the case of a check payment.
+      checkDate:
+        type: string
+        description: The date on the check in the case of a check payment.
+      cashDate:
+        type: string
+        description: The date the check was cashed in the case of a check payment.
+      voidDate:
+        type: string
+        description: The date a check payment was declared void.
+      voidReasonCode:
+        type: string
+        description: The code for the reason that a check was declared void.
+      voidReasonDescription:
+        type: string
+        description: A description for the reason a check was declared void.
+      cancelDate:
+        type: string
+        description: The date an EFT or check payment was canceled.
+      reversalDate:
+        type: string
+        description: The date an on account credit payment was reversed via debit memo.
+      reversalDocumentNumber:
+        type: string
+        description: The accounting document number used to process a payment reversal.
+      reversalPaymentRequestId:
+        type: string
+        description: The payment request id associated with a payment reversal.
+      reversalAmount:
+        type: number
+        description: The amount of payment that was reversed or debited from the customer account.
+      paymentRequestInsertTimestamp:
+        type: string
+        description: The date and time the payment request was created, in YYYY-MM-DD hh:mm:ss+hh:mm format.
+      paymentRequestUpdateTimestamp:
+        type: string
+        description: The date and time for last update on the payment request, in YYYY-MM-DD hh:mm:ss+hh:mm format.
+  marketFundingOffer:
+    type: object
+    properties:
+      offerId:
+        type: string
+        description: Unique identifier for an offer Id
+      offerSourceSystemCode:
+        type: string
+        description: Code identifying the system or application in which the market funding offer originated.
+      offerSourceId:
+        type: string
+        description: The unique identifier for the offer within the originating system.
+      offerStatusCode:
+        type: integer
+        format: int32
+        description: Number indicating the current status of an offer. 1-5.
+      offerStatusDescription:
+        type: string
+        description: Short description of the offer status.
+      offerLastUpdateTimestamp:
+        type: string
+        description: The date and time for last update on any payment request or activity relating to the offer.  In YY-MM-DD hh:mm:ss+hh:mm format.
+      paymentRequests:
+        type: object
+        properties:
+          items:
+            type: array
+            items:
+              $ref: '#/definitions/marketFundingPaymentRequest'
+  error:
+    type: object
+    properties:
+      status:
+        type: string
+      code:
+        type: integer
+        format: int32
+      errorMessage:
+        type: string

@@ -168,8 +168,8 @@ class SwaggerMergerSpec extends Spec {
 
       result.failure.exception shouldBe a[AggregateThrowable]
       val message = result.failure.exception.getMessage
-      message should include("/sub1/path1")
-      message should include("/sub1/path3")
+      message should include("The path /sub1/path1 has conflicts")
+      message should include("The path /sub1/path3 has conflicts")
       message should not include("/sub1/path2")
       message should not include("/sub2/path1")
     }
@@ -190,8 +190,40 @@ class SwaggerMergerSpec extends Spec {
       val result = swaggerMerger.mergeFiles(baseFile, Seq(file1, file2))
 
       result.failure.exception shouldBe a[AggregateThrowable]
-      result.failure.exception.getMessage should include("baseDocDef")
+      result.failure.exception.getMessage should include("The definition baseDocDef has conflicts")
       result.failure.exception.getMessage should not include("notTheBaseDocDef")
+    }
+
+    "aggregate errors when both paths and definitions conflict" in new Setup {
+      val file1 = new File("file-1")
+      val doc1 = DataGenerator.swaggerDoc(
+        paths = Option(Map(
+        "/sub1/path1" -> DataGenerator.swaggerPath(HttpMethod.Get),
+        "/sub1/path2" -> DataGenerator.swaggerPath(HttpMethod.Post),
+        )),
+        definitions = Option(Map(
+          "baseDocDef" -> DataGenerator.swaggerDefinition(`type` = "int"),
+          "notTheBaseDocDef" -> DataGenerator.swaggerDefinition(`type` = "string")
+        ))
+      )
+      (swaggerConverter.parse(_)).when(file1).returns(Success(doc1))
+
+      val file2 = new File("file-2")
+      val doc2 = DataGenerator.swaggerDoc(paths = Option(Map(
+        "/sub1/path1" -> DataGenerator.swaggerPath(HttpMethod.Get, summary = "I don't match doc1"),
+        "/sub2/path1" -> DataGenerator.swaggerPath(HttpMethod.Get)
+      )))
+      (swaggerConverter.parse(_)).when(file2).returns(Success(doc2))
+
+      val result = swaggerMerger.mergeFiles(baseFile, Seq(file1, file2))
+
+      result.failure.exception shouldBe a[AggregateThrowable]
+      val message = result.failure.exception.getMessage
+      message should include("The path /sub1/path1 has conflicts")
+      message should not include("/sub1/path2")
+      message should not include("/sub2/path1")
+      result.failure.exception.getMessage should include("The definition baseDocDef has conflicts")
+      message should not include("notTheBaseDocDef")
     }
   }
 }

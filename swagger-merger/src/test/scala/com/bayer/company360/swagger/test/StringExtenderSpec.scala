@@ -5,16 +5,11 @@ class StringExtenderSpec extends Spec {
 
   "tabIndentLines" should {
     "put a tab before each line" in {
-      val original =
-        """I am line 1
-          |I am line 2""".stripMargin
+      val original = s"I am line 1${newLine}I am line 2"
 
       val result = original.tabIndentLines
 
-      val expected = StringContext.treatEscapes(
-        """\tI am line 1
-          |\tI am line 2""".stripMargin
-      )
+      val expected = s"\tI am line 1${newLine}\tI am line 2"
 
       result should equal(expected)
     }
