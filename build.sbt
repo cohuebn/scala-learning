@@ -41,7 +41,8 @@ lazy val playground = project
       "io.circe" %% "circe-parser" % circeVersion,
       "io.circe" %% "circe-jawn" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
-      "io.circe" %% "circe-yaml" % "0.9.0"
+      "io.circe" %% "circe-yaml" % "0.9.0",
+      "com.chuusai" %% "shapeless" % "2.3.3",
     )
   )
 
