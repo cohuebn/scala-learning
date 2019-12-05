@@ -6,7 +6,7 @@ import java.util.Date
 import com.cory.playground.Variance.LazyConfirmation
 
 object Playground extends App {
-  Tests.runTypeClassScenario
+  Streams.runBackpressuredStream
 }
 
 object Tests {
