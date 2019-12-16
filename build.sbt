@@ -43,6 +43,7 @@ lazy val playground = project
       "io.circe" %% "circe-generic" % circeVersion,
       "io.circe" %% "circe-yaml" % "0.9.0",
       "com.chuusai" %% "shapeless" % "2.3.3",
+      "org.mockito" %% "mockito-scala" % "1.10.0"
     )
   )
 
